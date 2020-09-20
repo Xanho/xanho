@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package org.xanho.proto;
+
+import "scalapb/scalapb.proto";
+
+option (scalapb.options) = {
+  scope: FILE
+  package_name: "org.xanho.proto"
+  flat_package: true
+  single_file: true
+};
+
+message ActorReference {
+  option (scalapb.message).no_box = true;
+  option (scalapb.message).type = "akka.actor.ActorRef";
+  option (scalapb.message).companion_extends = "ActorReferenceCompanion";
+  string serialized = 1;
+}

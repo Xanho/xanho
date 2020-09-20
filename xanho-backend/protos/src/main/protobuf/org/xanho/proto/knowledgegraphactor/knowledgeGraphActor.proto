@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package org.xanho.proto.knowledgegraphactor;
+
+import "scalapb/scalapb.proto";
+import "org/xanho/proto/nlp/nlp.proto";
+import "org/xanho/proto/akkaGrpcCompat.proto";
+
+option (scalapb.options) = {
+  scope: FILE
+  package_name: "org.xanho.proto.knowledgegraphactor"
+  flat_package: true
+  single_file: true
+  preamble: "sealed trait KnowledgeGraphCommand"
+  preamble: "sealed trait KnowledgeGraphEvent"
+};
+
+// Commands
+
+message IngestText {
+  option (scalapb.message).extends = "org.xanho.proto.knowledgegraphactor.KnowledgeGraphCommand";
+
+  ActorReference replyTo = 1;
+  string text = 2;
+}
+
+message GetState {
+  option (scalapb.message).extends = "org.xanho.proto.knowledgegraphactor.KnowledgeGraphCommand";
+
+  ActorReference replyTo = 1;
+}
+
+// Events
+
+message TextIngested {
+  option (scalapb.message).extends = "org.xanho.proto.knowledgegraphactor.KnowledgeGraphEvent";
+
+  string text = 1;
+}
+
+// State
+
+message KnowledgeGraphState {
+
+  repeated org.xanho.proto.nlp.ParseResult parseResults = 1;
+}

@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package org.xanho.proto.nlp;
+
+import "scalapb/scalapb.proto";
+
+option (scalapb.options) = {
+  scope: FILE
+  package_name: "org.xanho.proto.nlp"
+  flat_package: true
+  single_file: true
+};
+
+message Text {
+  string text = 1;
+}
+
+message Token {
+  oneof value {
+    Space space = 1;
+    Punctuation punctuation = 2;
+    Word word = 3;
+  }
+
+  message Space {}
+
+  message Punctuation {
+    string value = 1;
+  }
+
+  message Word {
+    string value = 1;
+  }
+}
+
+message Phrase {
+  repeated Token.Word words = 1;
+}
+
+message Sentence {
+  Phrase phrase = 1;
+  Token.Punctuation punctuation = 2;
+  SentenceType sentenceType = 3;
+
+  enum SentenceType {
+    STATEMENT = 0;
+    QUESTION = 1;
+  }
+}
+
+message ParseResult {
+  Text text = 1;
+  repeated Sentence sentences = 2;
+}
+
+
