@@ -12,4 +12,7 @@ object Dependencies {
   val akkaHttp: ModuleID =
     "com.typesafe.akka" %% s"akka-http" % AkkaHttpVersion
 
+  val scalaTest: ModuleID =
+    "org.scalatest" %% "scalatest" % "3.2.0" % "test"
+
 }

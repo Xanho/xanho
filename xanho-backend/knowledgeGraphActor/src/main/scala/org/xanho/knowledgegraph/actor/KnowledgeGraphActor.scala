@@ -28,21 +28,22 @@ object KnowledgeGraphActor {
       eventHandler = { (state, event) =>
         event match {
           case TextIngested(text, _) =>
-            val parseResult =
-              proto.nlp.ParseResult(
-                text = Some(Text(text)),
-                sentences =
-                  NLP.parse(text)
-                    .map(s =>
-                      proto.nlp.Sentence(
-                        Some(Phrase(s.phrase.map(w => proto.nlp.Token.Word(w.value)))),
-                        s.punctuation.map(p => proto.nlp.Token.Punctuation(p.value))
-                      )
-                    )
-              )
-            state.copy(parseResults = state.parseResults :+ parseResult)
+            state.copy(parseResults = state.parseResults :+ parseToResult(text))
         }
       }
+    )
+
+  def parseToResult(text: String): proto.nlp.ParseResult =
+    proto.nlp.ParseResult(
+      text = Some(Text(text)),
+      sentences =
+        NLP.parse(text)
+          .map(s =>
+            proto.nlp.Sentence(
+              Some(Phrase(s.phrase.map(w => proto.nlp.Token.Word(w.value)))),
+              s.punctuation.map(p => proto.nlp.Token.Punctuation(p.value))
+            )
+          )
     )
 
 }

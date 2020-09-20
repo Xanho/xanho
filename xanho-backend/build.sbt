@@ -4,12 +4,23 @@ version := "0.1"
 
 scalaVersion := "2.13.3"
 
+val commonSettings =
+  Seq(
+    libraryDependencies ++= Seq(
+      Dependencies.scalaTest
+    ),
+    dependencyOverrides ++= Seq(
+      Dependencies.akkaModule("discovery"),
+    ),
+  )
+
 lazy val nlp =
   project
 
 lazy val akkaGrpcCompat =
   project
     .enablePlugins(AkkaGrpcPlugin)
+    .settings(commonSettings: _*)
     .settings(
       libraryDependencies ++= Seq(
         Dependencies.akkaModule("actor"),
@@ -21,6 +32,7 @@ lazy val akkaGrpcCompat =
 lazy val protos =
   project
     .enablePlugins(AkkaGrpcPlugin)
+    .settings(commonSettings: _*)
     .dependsOn(akkaGrpcCompat)
     .settings(
       libraryDependencies ++= Seq(
@@ -31,22 +43,26 @@ lazy val protos =
 
 lazy val knowledgeGraphActor =
   project
+    .settings(commonSettings: _*)
     .dependsOn(nlp, protos)
     .settings(
       libraryDependencies ++= Seq(
         Dependencies.akkaModule("actor-typed"),
         Dependencies.akkaModule("persistence-typed"),
+        Dependencies.akkaModule("persistence-testkit") % Test,
       )
     )
 
 lazy val knowledgeGraphServiceProtos =
   project
     .enablePlugins(AkkaGrpcPlugin)
+    .settings(commonSettings: _*)
     .dependsOn(protos)
 
 lazy val knowledgeGraphService =
   project
     .enablePlugins(AkkaGrpcPlugin)
+    .settings(commonSettings: _*)
     .dependsOn(protos, knowledgeGraphActor, knowledgeGraphServiceProtos)
     .settings(
       libraryDependencies ++= Seq(
@@ -57,20 +73,15 @@ lazy val knowledgeGraphService =
         Dependencies.akkaModule("cluster-sharding-typed"),
         "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
       ),
-      dependencyOverrides ++= Seq(
-        Dependencies.akkaModule("discovery"),
-      ),
     )
 
 lazy val knowledgeGraphServiceTest =
   project
     .enablePlugins(AkkaGrpcPlugin)
+    .settings(commonSettings: _*)
     .dependsOn(protos, knowledgeGraphActor, knowledgeGraphServiceProtos)
     .settings(
       libraryDependencies ++= Seq(
         Dependencies.logging,
       ),
-      dependencyOverrides ++= Seq(
-        Dependencies.akkaModule("discovery"),
-      )
     )
