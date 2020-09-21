@@ -11,8 +11,8 @@ option (scalapb.options) = {
   package_name: "org.xanho.proto.knowledgegraphactor"
   flat_package: true
   single_file: true
-  preamble: "sealed trait KnowledgeGraphCommand"
-  preamble: "sealed trait KnowledgeGraphEvent"
+  preamble: "sealed trait KnowledgeGraphCommand extends scalapb.GeneratedMessage"
+  preamble: "sealed trait KnowledgeGraphEvent extends scalapb.GeneratedMessage"
 };
 
 // Commands

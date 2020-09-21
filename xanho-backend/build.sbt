@@ -61,7 +61,7 @@ lazy val knowledgeGraphServiceProtos =
 
 lazy val knowledgeGraphService =
   project
-    .enablePlugins(AkkaGrpcPlugin)
+    .enablePlugins(AkkaGrpcPlugin, CloudflowApplicationPlugin, CloudflowAkkaPlugin)
     .settings(commonSettings: _*)
     .dependsOn(protos, knowledgeGraphActor, knowledgeGraphServiceProtos)
     .settings(
