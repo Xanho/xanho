@@ -2,7 +2,7 @@ package org.xanho.knowledgegraph.service.streamlets
 
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.scaladsl.adapter._
-import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityTypeKey}
+import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity, EntityTypeKey}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.Materializer
@@ -12,6 +12,7 @@ import akka.{Done, NotUsed}
 import cloudflow.akkastream.{AkkaServerStreamlet, AkkaStreamletLogic, Clustering}
 import cloudflow.streamlets.proto.ProtoOutlet
 import cloudflow.streamlets.{RoundRobinPartitioner, StreamletShape}
+import org.xanho.knowledgegraph.actor.KnowledgeGraphActor
 import org.xanho.knowledgegraph.service.proto._
 import org.xanho.proto.knowledgegraphactor.{GetState, KnowledgeGraphCommand, KnowledgeGraphState}
 
@@ -42,6 +43,8 @@ class GrpcStreamlet extends AkkaServerStreamlet with Clustering {
 
         val KnowledgeGraphActorTypeKey =
           EntityTypeKey[KnowledgeGraphCommand]("KnowledgeGraphCommand")
+
+        sharding.init(Entity(KnowledgeGraphActorTypeKey)(createBehavior = entityContext => KnowledgeGraphActor(entityContext.entityId)))
 
         val reusableSink: Sink[IngestTextRequest, NotUsed] =
           MergeHub.source[IngestTextRequest]

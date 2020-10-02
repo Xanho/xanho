@@ -1,7 +1,7 @@
 import sbt._
 
 object Dependencies {
-  val AkkaVersion = "2.6.9"
+  val AkkaVersion = "2.6.8"
   val AkkaHttpVersion = "10.2.0"
 
   val logging: ModuleID = "ch.qos.logback" % "logback-classic" % "1.2.3"
