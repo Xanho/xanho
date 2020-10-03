@@ -6,6 +6,7 @@ import akka.persistence.journal.AsyncWriteJournal
 import akka.persistence.{AtomicWrite, PersistentRepr}
 import akka.stream.scaladsl.{Sink, Source}
 import com.google.cloud.firestore.{CollectionReference, DocumentReference, SetOptions}
+import com.typesafe.config.Config
 import org.xanho.lib.firestore.FirestoreApi
 import org.xanho.lib.firestore.implicits.FirestoreFutureHelper
 
@@ -14,7 +15,7 @@ import scala.collection.immutable
 import scala.concurrent.Future
 import scala.util.{Success, Try}
 
-class FirestoreAsyncWriteJournal extends AsyncWriteJournal {
+class FirestoreAsyncWriteJournal(config: Config) extends AsyncWriteJournal {
 
   private implicit val system: ActorSystem[_] =
     context.system.toTyped
@@ -24,20 +25,31 @@ class FirestoreAsyncWriteJournal extends AsyncWriteJournal {
   import context.dispatcher
   import firestoreApi._
 
+  private val writeJournalCollection: String =
+    config.withFallback(
+      system.settings.config.getConfig("default-akka-persistence-write-journal-settings")
+    )
+      .getString("firestore-collection")
+
   override def asyncWriteMessages(messages: immutable.Seq[AtomicWrite]): Future[immutable.Seq[Try[Unit]]] =
     Source(messages)
       .map(atomicWrite =>
-        atomicWrite.payload
-          .foldLeft(firestore.batch())(
-            (batchWrite, repr) =>
-              batchWrite.set(
-                eventsReference(repr.persistenceId).document(repr.sequenceNr.toString),
-                repr.asInstanceOf[Product].toJavaMap
+        createDocumentIfNotExists(
+          persistenceReference(atomicWrite.persistenceId)
+        )
+          .flatMap(_ =>
+            atomicWrite.payload
+              .foldLeft(firestore.batch())(
+                (batchWrite, repr) =>
+                  batchWrite.set(
+                    eventsReference(repr.persistenceId).document(repr.sequenceNr.toString),
+                    repr.asInstanceOf[Product].toJavaMap
+                  )
               )
+              .commit().scalaFuture
+              .map(_ => ())
+              .transform(Success(_))
           )
-          .commit().scalaFuture
-          .map(_ => ())
-          .transform(Success(_))
       )
       .mapAsync(10)(identity)
       .runWith(Sink.seq)
@@ -84,7 +96,7 @@ class FirestoreAsyncWriteJournal extends AsyncWriteJournal {
       )
 
   private def persistenceReference(persistenceId: String): DocumentReference =
-    firestore.collection("persistence-events")
+    firestore.collection(writeJournalCollection)
       .document(persistenceId)
 
   private def eventsReference(persistenceId: String): CollectionReference =

@@ -3,15 +3,18 @@ package org.xanho.lib.firestore.persistence
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter._
 import akka.persistence.snapshot.SnapshotStore
-import akka.persistence.{PersistentRepr, SelectedSnapshot, SnapshotMetadata, SnapshotSelectionCriteria}
+import akka.persistence.{SelectedSnapshot, SnapshotMetadata, SnapshotSelectionCriteria}
+import akka.stream.scaladsl.Sink
 import com.google.cloud.firestore.CollectionReference
+import com.google.cloud.firestore.Query.Direction
+import com.typesafe.config.Config
 import org.xanho.lib.firestore.FirestoreApi
 import org.xanho.lib.firestore.implicits.FirestoreFutureHelper
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
 
-class FirestoreAsyncSnapshotStore extends SnapshotStore {
+class FirestoreAsyncSnapshotStore(config: Config) extends SnapshotStore {
 
   private implicit val system: ActorSystem[_] =
     context.system.toTyped
@@ -21,29 +24,40 @@ class FirestoreAsyncSnapshotStore extends SnapshotStore {
   import context.dispatcher
   import firestoreApi._
 
+  private val snapshotStoreCollection: String =
+    config.withFallback(
+      system.settings.config.getConfig("default-akka-persistence-snapshot-store-settings")
+    )
+      .getString("firestore-collection")
+
   override def loadAsync(persistenceId: String, criteria: SnapshotSelectionCriteria): Future[Option[SelectedSnapshot]] =
     selectSnapshots(persistenceId, criteria)
-      .orderBy("metadata.sequenceNr")
-      .limitToLast(1)
-      .get()
-      .scalaFuture
-      .map(snapshot =>
-        snapshot.getDocuments.asScala
-          .headOption
-          .map(_.toObject(classOf[SelectedSnapshot]))
+      .orderBy("metadata.sequenceNr", Direction.DESCENDING)
+      .unfoldSource(1)
+      .map(_.getData.asScala.toMap)
+      .map(FirestoreAsyncSnapshotStore.mapToSelectedSnapshot)
+      .filter(snapshot =>
+        snapshot.metadata.timestamp >= criteria.minTimestamp &&
+          snapshot.metadata.timestamp <= criteria.maxTimestamp
       )
+      .runWith(Sink.headOption)
 
   override def saveAsync(metadata: SnapshotMetadata, snapshot: Any): Future[Unit] =
-    snapshotCollectionReference(metadata.persistenceId)
-      .document(metadata.sequenceNr.toString)
-      .set(
-        Map(
-          "metadata" -> metadata,
-          "snapshot" -> snapshot
-        ).asJava
-      )
-      .scalaFuture
-      .map(_ => ())
+    createDocumentIfNotExists(
+      firestore.collection(snapshotStoreCollection)
+        .document(metadata.persistenceId)
+    ).flatMap(_ =>
+      snapshotCollectionReference(metadata.persistenceId)
+        .document(metadata.sequenceNr.toString)
+        .set(
+          Map(
+            "metadata" -> FirestoreAsyncSnapshotStore.snapshotMetadataToMap(metadata).asJava,
+            "snapshot" -> snapshot
+          ).asJava
+        )
+        .scalaFuture
+        .map(_ => ())
+    )
 
   override def deleteAsync(metadata: SnapshotMetadata): Future[Unit] =
     snapshotCollectionReference(metadata.persistenceId)
@@ -54,18 +68,57 @@ class FirestoreAsyncSnapshotStore extends SnapshotStore {
 
   override def deleteAsync(persistenceId: String, criteria: SnapshotSelectionCriteria): Future[Unit] =
     selectSnapshots(persistenceId, criteria)
-      .deleteAll()
+      .orderBy("metadata.sequenceNr", Direction.DESCENDING)
+      .select("metadata.sequenceNr", "metadata.timestamp")
+      .unfoldSource(10)
+      .filter { snapshot =>
+        val timestamp = Option(snapshot.get("metadata.timestamp")).fold(0L)(_.asInstanceOf[Long])
+        timestamp >= criteria.minTimestamp &&
+          timestamp <= criteria.maxTimestamp
+      }
+      .map(_.getReference)
+      .grouped(10)
+      .map(group =>
+        group.foldLeft(firestore.batch())(
+          (batch, snapshot) =>
+            batch.delete(snapshot)
+        ).commit().scalaFuture
+      )
+      .mapAsync(1)(identity)
+      .runWith(Sink.ignore)
       .map(_ => ())
 
   private def snapshotCollectionReference(persistenceId: String): CollectionReference =
-    firestore.collection("snapshot-store")
+    firestore.collection(snapshotStoreCollection)
       .document(persistenceId)
       .collection("snapshots")
 
+  // Note: Firestore does not support comparison filters on more than one property, so timestamp is not checked
   private def selectSnapshots(persistenceId: String, criteria: SnapshotSelectionCriteria) =
     snapshotCollectionReference(persistenceId)
       .whereGreaterThanOrEqualTo("metadata.sequenceNr", criteria.minSequenceNr)
       .whereLessThanOrEqualTo("metadata.sequenceNr", criteria.maxSequenceNr)
-      .whereGreaterThanOrEqualTo("metadata.timestamp", criteria.minTimestamp)
-      .whereLessThanOrEqualTo("metadata.timestamp", criteria.maxTimestamp)
+}
+
+object FirestoreAsyncSnapshotStore {
+  def mapToSelectedSnapshot(map: Map[String, AnyRef]): SelectedSnapshot =
+    SelectedSnapshot(
+      metadata = mapToSnapshotMetadata(map("metadata").asInstanceOf[java.util.Map[String, AnyRef]].asScala.toMap),
+      snapshot = map("snapshot")
+    )
+
+  def mapToSnapshotMetadata(map: Map[String, AnyRef]): SnapshotMetadata =
+    SnapshotMetadata(
+      persistenceId = map.getOrElse("persistenceId", "0").toString,
+      sequenceNr = map.getOrElse("sequenceNr", 0L).asInstanceOf[Long],
+      timestamp = map.getOrElse("timestamp", 0L).asInstanceOf[Long]
+    )
+
+  def snapshotMetadataToMap(snapshotMetadata: SnapshotMetadata): Map[String, AnyRef] =
+    Map(
+      "persistenceId" -> snapshotMetadata.persistenceId,
+      "sequenceNr" -> Long.box(snapshotMetadata.sequenceNr),
+      "timestamp" -> Long.box(snapshotMetadata.timestamp)
+    )
+
 }
