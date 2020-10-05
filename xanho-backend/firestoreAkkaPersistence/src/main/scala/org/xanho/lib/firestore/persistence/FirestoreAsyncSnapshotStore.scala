@@ -4,8 +4,9 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter._
 import akka.persistence.snapshot.SnapshotStore
 import akka.persistence.{SelectedSnapshot, SnapshotMetadata, SnapshotSelectionCriteria}
+import akka.serialization._
 import akka.stream.scaladsl.Sink
-import com.google.cloud.firestore.CollectionReference
+import com.google.cloud.firestore.{Blob, CollectionReference}
 import com.google.cloud.firestore.Query.Direction
 import com.typesafe.config.Config
 import org.xanho.lib.firestore.FirestoreApi
@@ -21,6 +22,8 @@ class FirestoreAsyncSnapshotStore(config: Config) extends SnapshotStore {
 
   private val firestoreApi = FirestoreApi(system)
 
+  private val serialization = SerializationExtension(system)
+
   import context.dispatcher
   import firestoreApi._
 
@@ -35,7 +38,7 @@ class FirestoreAsyncSnapshotStore(config: Config) extends SnapshotStore {
       .orderBy("metadata.sequenceNr", Direction.DESCENDING)
       .unfoldSource(1)
       .map(_.getData.asScala.toMap)
-      .map(FirestoreAsyncSnapshotStore.mapToSelectedSnapshot)
+      .map(mapToSelectedSnapshot)
       .filter(snapshot =>
         snapshot.metadata.timestamp >= criteria.minTimestamp &&
           snapshot.metadata.timestamp <= criteria.maxTimestamp
@@ -49,12 +52,7 @@ class FirestoreAsyncSnapshotStore(config: Config) extends SnapshotStore {
     ).flatMap(_ =>
       snapshotCollectionReference(metadata.persistenceId)
         .document(metadata.sequenceNr.toString)
-        .set(
-          Map(
-            "metadata" -> FirestoreAsyncSnapshotStore.snapshotMetadataToMap(metadata).asJava,
-            "snapshot" -> snapshot
-          ).asJava
-        )
+        .set(snapshotToMap(metadata, snapshot).asJava)
         .scalaFuture
         .map(_ => ())
     )
@@ -98,20 +96,41 @@ class FirestoreAsyncSnapshotStore(config: Config) extends SnapshotStore {
     snapshotCollectionReference(persistenceId)
       .whereGreaterThanOrEqualTo("metadata.sequenceNr", criteria.minSequenceNr)
       .whereLessThanOrEqualTo("metadata.sequenceNr", criteria.maxSequenceNr)
-}
 
-object FirestoreAsyncSnapshotStore {
-  def mapToSelectedSnapshot(map: Map[String, AnyRef]): SelectedSnapshot =
-    SelectedSnapshot(
-      metadata = mapToSnapshotMetadata(map("metadata").asInstanceOf[java.util.Map[String, AnyRef]].asScala.toMap),
-      snapshot = map("snapshot")
+  def snapshotToMap(metadata: SnapshotMetadata, payload: Any): Map[String, AnyRef] = {
+    val boxedPayload =
+      box(payload)
+    val serializer =
+      serialization.findSerializerFor(boxedPayload)
+
+    Map(
+      "payload" -> Blob.fromBytes(serialization.serialize(boxedPayload).get),
+      "payloadSerializerId" -> Int.box(serializer.identifier),
+      "payloadManifest" -> Serializers.manifestFor(serializer, boxedPayload),
+      "metadata" -> snapshotMetadataToMap(metadata).asJava
     )
+  }
+
+  def mapToSelectedSnapshot(map: Map[String, AnyRef]): SelectedSnapshot = {
+    val payload =
+      serialization.deserialize(
+        map("payload").asInstanceOf[Blob].toBytes,
+        Int.box(map("payloadSerializerId").asInstanceOf[Number].intValue()),
+        map("payloadManifest").asInstanceOf[String]
+      ).get
+    SelectedSnapshot(
+      metadata = mapToSnapshotMetadata(
+        map("metadata").asInstanceOf[java.util.Map[String, AnyRef]].asScala.toMap
+      ),
+      snapshot = payload
+    )
+  }
 
   def mapToSnapshotMetadata(map: Map[String, AnyRef]): SnapshotMetadata =
     SnapshotMetadata(
       persistenceId = map.getOrElse("persistenceId", "0").toString,
-      sequenceNr = map.getOrElse("sequenceNr", 0L).asInstanceOf[Long],
-      timestamp = map.getOrElse("timestamp", 0L).asInstanceOf[Long]
+      sequenceNr = Long.box(map.getOrElse("sequenceNr", 0L).asInstanceOf[Number].longValue()),
+      timestamp = Long.box(map.getOrElse("timestamp", 0L).asInstanceOf[Number].longValue())
     )
 
   def snapshotMetadataToMap(snapshotMetadata: SnapshotMetadata): Map[String, AnyRef] =
@@ -120,5 +139,8 @@ object FirestoreAsyncSnapshotStore {
       "sequenceNr" -> Long.box(snapshotMetadata.sequenceNr),
       "timestamp" -> Long.box(snapshotMetadata.timestamp)
     )
+}
+
+object FirestoreAsyncSnapshotStore {
 
 }

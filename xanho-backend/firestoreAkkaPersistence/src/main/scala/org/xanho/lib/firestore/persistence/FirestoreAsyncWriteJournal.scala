@@ -4,8 +4,9 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter._
 import akka.persistence.journal.AsyncWriteJournal
 import akka.persistence.{AtomicWrite, PersistentRepr}
+import akka.serialization._
 import akka.stream.scaladsl.{Sink, Source}
-import com.google.cloud.firestore.{CollectionReference, DocumentReference, SetOptions}
+import com.google.cloud.firestore.{Blob, CollectionReference, DocumentReference, SetOptions}
 import com.typesafe.config.Config
 import org.xanho.lib.firestore.FirestoreApi
 import org.xanho.lib.firestore.implicits.FirestoreFutureHelper
@@ -21,6 +22,8 @@ class FirestoreAsyncWriteJournal(config: Config) extends AsyncWriteJournal {
     context.system.toTyped
 
   private val firestoreApi = FirestoreApi(system)
+
+  private val serialization = SerializationExtension(system)
 
   import context.dispatcher
   import firestoreApi._
@@ -43,7 +46,7 @@ class FirestoreAsyncWriteJournal(config: Config) extends AsyncWriteJournal {
                 (batchWrite, repr) =>
                   batchWrite.set(
                     eventsReference(repr.persistenceId).document(repr.sequenceNr.toString),
-                    repr.asInstanceOf[Product].toJavaMap
+                    persistenceReprToMap(repr).asJava
                   )
               )
               .commit().scalaFuture
@@ -74,7 +77,7 @@ class FirestoreAsyncWriteJournal(config: Config) extends AsyncWriteJournal {
       .orderBy("sequenceNr")
       .unfoldSource
       .map(_.getData.asScala.toMap)
-      .map(FirestoreAsyncWriteJournal.mapToRepr)
+      .map(mapToRepr)
       .filterNot(_.deleted)
       .take(max)
       .runForeach(recoveryCallback)
@@ -102,12 +105,16 @@ class FirestoreAsyncWriteJournal(config: Config) extends AsyncWriteJournal {
   private def eventsReference(persistenceId: String): CollectionReference =
     persistenceReference(persistenceId)
       .collection("events")
-}
 
-object FirestoreAsyncWriteJournal {
-  def mapToRepr(map: Map[String, AnyRef]): PersistentRepr =
+  def mapToRepr(map: Map[String, AnyRef]): PersistentRepr = {
+    val payload =
+      serialization.deserialize(
+        map("payload").asInstanceOf[Blob].toBytes,
+        map("payloadSerializerId").asInstanceOf[Number].intValue(),
+        map("payloadManifest").asInstanceOf[String]
+      ).get
     PersistentRepr(
-      payload = map("payload"),
+      payload = payload,
       sequenceNr = map("sequenceNr").asInstanceOf[java.lang.Number].longValue(),
       persistenceId = map("persistenceId").asInstanceOf[String],
       manifest = map.getOrElse("manifest", PersistentRepr.Undefined).asInstanceOf[String],
@@ -115,4 +122,27 @@ object FirestoreAsyncWriteJournal {
       sender = null,
       writerUuid = map.getOrElse("writerUuid", PersistentRepr.Undefined).asInstanceOf[String]
     )
+  }
+
+  def persistenceReprToMap(repr: PersistentRepr): Map[String, AnyRef] = {
+    val boxedPayload =
+      box(repr.payload)
+    val serializer =
+      serialization.findSerializerFor(boxedPayload)
+    Map(
+      "payload" -> Blob.fromBytes(serialization.serialize(boxedPayload).get),
+      "payloadSerializerId" -> Int.box(serializer.identifier),
+      "payloadManifest" -> Serializers.manifestFor(serializer, boxedPayload),
+      "persistenceId" -> repr.persistenceId,
+      "sequenceNr" -> Long.box(repr.sequenceNr),
+      "timestamp" -> Long.box(repr.timestamp),
+      "manifest" -> repr.manifest,
+      "deleted" -> Boolean.box(repr.deleted),
+      "writerUuid" -> repr.writerUuid,
+    )
+  }
+}
+
+object FirestoreAsyncWriteJournal {
+
 }

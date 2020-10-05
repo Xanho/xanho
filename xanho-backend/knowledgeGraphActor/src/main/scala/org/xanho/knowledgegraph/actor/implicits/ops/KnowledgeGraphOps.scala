@@ -9,6 +9,8 @@ class KnowledgeGraphOps(self: KnowledgeGraphState) {
 
   def allSentences: Seq[Sentence] =
     self.parseResults
+      .flatMap(_.document)
+      .flatMap(_.paragraphs)
       .flatMap(_.sentences)
 
   def sentencesIncludingWord(word: Token.Word): Seq[Sentence] = {

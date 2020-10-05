@@ -12,7 +12,7 @@ import scala.concurrent.duration._
 class FirestoreAsyncWriteJournalSpec extends JournalSpec(
   ConfigFactory.defaultApplication().withFallback(
     ConfigFactory.parseString(
-      """
+      raw"""
         |akka.persistence.journal.plugin = "firestore-write-journal"
         |firestore-write-journal.firestore-collection = "write-journal-test-${System.currentTimeMillis()}"
         |""".stripMargin
@@ -23,7 +23,7 @@ class FirestoreAsyncWriteJournalSpec extends JournalSpec(
     false
 
   override protected def supportsSerialization: CapabilityFlag =
-    false
+    true
 
   override def afterAll(): Unit = {
     val collectionName =

@@ -11,7 +11,7 @@ import scala.concurrent.duration._
 
 class FirestoreAsyncSnapshotStoreSpec extends SnapshotStoreSpec(
   ConfigFactory.parseString(
-    s"""
+    raw"""
        |akka.persistence.snapshot-store.plugin = "firestore-snapshot-store"
        |firestore-snapshot-store.firestore-collection = "snapshot-store-test-${System.currentTimeMillis()}"
        |""".stripMargin
@@ -19,7 +19,7 @@ class FirestoreAsyncSnapshotStoreSpec extends SnapshotStoreSpec(
 ) {
 
   override protected def supportsSerialization: CapabilityFlag =
-    false
+    true
 
   override def afterAll(): Unit = {
     val collectionName =

@@ -1,6 +1,5 @@
 package org.xanho.knowledgegraph.service.streamlets
 
-import akka.Done
 import akka.actor.typed.scaladsl.adapter._
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity, EntityTypeKey}
 import akka.util.Timeout
@@ -9,7 +8,7 @@ import cloudflow.streamlets.StreamletShape
 import cloudflow.streamlets.proto.ProtoInlet
 import org.xanho.knowledgegraph.actor.KnowledgeGraphActor
 import org.xanho.knowledgegraph.service.proto.IngestTextRequest
-import org.xanho.proto.knowledgegraphactor.{IngestText, KnowledgeGraphCommand}
+import org.xanho.proto.knowledgegraphactor.{IngestText, IngestTextResponse, KnowledgeGraphCommand}
 
 import scala.concurrent.duration._
 
@@ -35,7 +34,7 @@ class TextHandlerStreamlet extends AkkaStreamlet with Clustering {
 
         sourceWithCommittableContext(inlet)
           .mapAsync(10)(request =>
-            sharding.entityRefFor(KnowledgeGraphActorTypeKey, request.graphId).ask[Done](
+            sharding.entityRefFor(KnowledgeGraphActorTypeKey, request.graphId).ask[IngestTextResponse](
               ref => IngestText(ref.toClassic, request.text)
             )
           )

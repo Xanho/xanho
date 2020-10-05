@@ -1,7 +1,8 @@
 syntax = "proto3";
 
-package org.xanho.knowledgegraph.service.proto;
 
+package org.xanho.knowledgegraph.service.proto;
+import "org/xanho/proto/nlp/nlp.proto";
 import "org/xanho/proto/knowledgegraphactor/knowledgeGraphActor.proto";
 
 service KnowledgeGraphService {
@@ -9,6 +10,10 @@ service KnowledgeGraphService {
   rpc IngestTextStream(stream IngestTextRequest) returns (IngestTextStreamResponse);
 
   rpc GetState(GetStateRequest) returns (GetStateResponse);
+
+  rpc GetAnalysis(GetAnalysisRequest) returns (GetAnalysisResponse);
+
+  rpc GenerateResponse(GenerateResponseRequest) returns (GenerateResponseResponse);
 
 }
 
@@ -28,4 +33,31 @@ message GetStateRequest {
 message GetStateResponse {
   string graphId = 1;
   org.xanho.proto.knowledgegraphactor.KnowledgeGraphState state = 2;
+}
+
+message GetAnalysisRequest {
+  string graphId = 1;
+}
+
+message GetAnalysisResponse {
+  string graphId = 1;
+
+  repeated org.xanho.proto.nlp.Token.Word vocabulary = 101;
+  repeated WordFrequency wordFrequencies = 102;
+
+  message WordFrequency {
+    org.xanho.proto.nlp.Token.Word word = 1;
+    double percent = 2;
+  }
+
+}
+
+message GenerateResponseRequest {
+  string graphId = 1;
+}
+
+message  GenerateResponseResponse {
+  string graphId = 1;
+
+  org.xanho.proto.nlp.Document document = 2;
 }

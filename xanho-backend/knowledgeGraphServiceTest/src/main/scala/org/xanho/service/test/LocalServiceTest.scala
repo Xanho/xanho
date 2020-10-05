@@ -4,22 +4,20 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.grpc.GrpcClientSettings
 import akka.stream.scaladsl.Source
-import org.xanho.knowledgegraph.service.proto.{GetStateRequest, GetStateResponse, IngestTextRequest, KnowledgeGraphServiceClient}
+import org.xanho.knowledgegraph.service.proto.{GetAnalysisRequest, GetStateRequest, IngestTextRequest, KnowledgeGraphServiceClient}
 
-import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 
 object LocalServiceTest extends App {
 
   implicit val system: ActorSystem[_] =
     ActorSystem(Behaviors.empty, "grpc-service-test")
 
-  import system.executionContext
-
   val client =
     KnowledgeGraphServiceClient(GrpcClientSettings.connectToServiceAt("localhost", 8080).withTls(false))
 
-  val stateF =
+  val ingestResult =
     client.ingestTextStream(
       Source(
         List(
@@ -30,15 +28,26 @@ object LocalServiceTest extends App {
         )
       )
     )
-      .flatMap(_ =>
-        client.getState(GetStateRequest(graphId = "graph1"))
-      )
+      .await
 
-  val state: GetStateResponse =
-    Await.result(stateF, 20.seconds)
+  val state =
+    client.getState(GetStateRequest(graphId = "graph1")).await
 
   println(state)
 
+  val analysis =
+    client.getAnalysis(GetAnalysisRequest(graphId = "graph1")).await
+
+  println(analysis)
+
   system.terminate()
+
+  implicit class FutureHelpers[T](future: Future[T]) {
+    def await: T =
+      future.await(20.seconds)
+
+    def await(duration: Duration): T =
+      Await.result(future, duration)
+  }
 
 }

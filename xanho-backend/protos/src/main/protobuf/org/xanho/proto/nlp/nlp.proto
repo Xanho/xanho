@@ -18,11 +18,13 @@ message Text {
 message Token {
   oneof value {
     Space space = 1;
-    Punctuation punctuation = 2;
-    Word word = 3;
+    LineBreak lineBreak = 2;
+    Punctuation punctuation = 3;
+    Word word = 4;
   }
 
   message Space {}
+  message LineBreak {}
 
   message Punctuation {
     string value = 1;
@@ -48,9 +50,17 @@ message Sentence {
   }
 }
 
+message Paragraph {
+  repeated Sentence sentences = 1;
+}
+
+message Document {
+  repeated Paragraph paragraphs = 1;
+}
+
 message ParseResult {
   Text text = 1;
-  repeated Sentence sentences = 2;
+  Document document = 2;
 }
 
 

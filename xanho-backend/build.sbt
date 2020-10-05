@@ -20,7 +20,9 @@ lazy val root =
       knowledgeGraphServiceProtos,
       streamlets,
       knowledgeGraphServiceTest,
-      blueprint
+      blueprint,
+      firestoreClient,
+      firestoreAkkaPersistence,
     )
 
 val commonSettings =
@@ -36,14 +38,11 @@ val commonSettings =
     ),
   )
 
-lazy val nlp =
-  project
-    .enablePlugins(CloudflowLibraryPlugin)
-
-lazy val akkaGrpcCompat =
+lazy val protos =
   project
     .enablePlugins(AkkaGrpcPlugin, CloudflowLibraryPlugin)
     .settings(commonSettings: _*)
+    .dependsOn(akkaGrpcCompat)
     .settings(
       libraryDependencies ++= Seq(
         Dependencies.akkaModule("actor"),
@@ -51,12 +50,16 @@ lazy val akkaGrpcCompat =
       ),
     )
 
+lazy val nlp =
+  project
+    .enablePlugins(CloudflowLibraryPlugin)
+    .settings(commonSettings: _*)
+    .dependsOn(protos)
 
-lazy val protos =
+lazy val akkaGrpcCompat =
   project
     .enablePlugins(AkkaGrpcPlugin, CloudflowLibraryPlugin)
     .settings(commonSettings: _*)
-    .dependsOn(akkaGrpcCompat)
     .settings(
       libraryDependencies ++= Seq(
         Dependencies.akkaModule("actor"),
@@ -73,7 +76,10 @@ lazy val knowledgeGraphActor =
       libraryDependencies ++= Seq(
         Dependencies.akkaModule("actor-typed"),
         Dependencies.akkaModule("persistence-typed"),
+      ),
+      libraryDependencies ++= Seq(
         Dependencies.akkaModule("persistence-testkit") % Test,
+        "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8" % Test
       )
     )
 
@@ -87,7 +93,7 @@ lazy val streamlets =
   project
     .enablePlugins(AkkaGrpcPlugin, CloudflowAkkaPlugin)
     .settings(commonSettings: _*)
-    .dependsOn(protos, knowledgeGraphActor, knowledgeGraphServiceProtos)
+    .dependsOn(protos, knowledgeGraphActor, knowledgeGraphServiceProtos, firestoreAkkaPersistence)
     .settings(
       libraryDependencies ++= Seq(
         Dependencies.logging,
@@ -97,7 +103,6 @@ lazy val streamlets =
         Dependencies.akkaModule("cluster-sharding-typed"),
         Dependencies.akkaModule("testkit"),
         Dependencies.akkaModule("stream-testkit"),
-        "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
       ),
     )
 
@@ -122,7 +127,6 @@ lazy val firestoreClient =
     .settings(commonSettings: _*)
     .settings(
       libraryDependencies ++= Seq(
-//        "com.google.cloud" % "google-cloud-firestore" % "2.1.0",
         "com.google.firebase" % "firebase-admin" % "7.0.0",
         Dependencies.akkaModule("actor-typed"),
         Dependencies.akkaModule("stream-typed"),

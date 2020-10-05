@@ -13,8 +13,10 @@ import cloudflow.akkastream.{AkkaServerStreamlet, AkkaStreamletLogic, Clustering
 import cloudflow.streamlets.proto.ProtoOutlet
 import cloudflow.streamlets.{RoundRobinPartitioner, StreamletShape}
 import org.xanho.knowledgegraph.actor.KnowledgeGraphActor
+import org.xanho.knowledgegraph.actor.implicits._
 import org.xanho.knowledgegraph.service.proto._
 import org.xanho.proto.knowledgegraphactor.{GetState, KnowledgeGraphCommand, KnowledgeGraphState}
+import org.xanho.proto.nlp
 
 import scala.concurrent.duration._
 import scala.concurrent.{Future, Promise}
@@ -52,11 +54,11 @@ class GrpcStreamlet extends AkkaServerStreamlet with Clustering {
             .run()
 
         val getStateImpl =
-          (request: GetStateRequest) =>
-            sharding.entityRefFor(KnowledgeGraphActorTypeKey, request.graphId).ask[KnowledgeGraphState](
+          (graphId: String) =>
+            sharding.entityRefFor(KnowledgeGraphActorTypeKey, graphId).ask[GetStateResponse](
               ref => GetState(ref.toClassic)
             )
-              .map(state => GetStateResponse(request.graphId, Some(state)))
+              .map(_.state.get) // TODO: None.get
 
         val grpcImpl =
           new KnowledgeGraphServiceStreamletImpl(reusableSink, getStateImpl)
@@ -105,7 +107,7 @@ class GrpcStreamlet extends AkkaServerStreamlet with Clustering {
 
 }
 
-private class KnowledgeGraphServiceStreamletImpl(ingestTextSink: Sink[IngestTextRequest, _], getStateImpl: GetStateRequest => Future[GetStateResponse])(implicit mat: Materializer) extends KnowledgeGraphService {
+private class KnowledgeGraphServiceStreamletImpl(ingestTextSink: Sink[IngestTextRequest, _], getStateImpl: String => Future[KnowledgeGraphState])(implicit mat: Materializer) extends KnowledgeGraphService {
 
   import mat.executionContext
 
@@ -116,5 +118,32 @@ private class KnowledgeGraphServiceStreamletImpl(ingestTextSink: Sink[IngestText
       .map(IngestTextStreamResponse(_))
 
   override def getState(in: GetStateRequest): Future[GetStateResponse] =
-    getStateImpl(in)
+    getStateImpl(in.graphId)
+      .map(state => GetStateResponse(in.graphId, Some(state)))
+
+  override def getAnalysis(in: GetAnalysisRequest): Future[GetAnalysisResponse] =
+    getStateImpl(in.graphId)
+      .map(state =>
+        GetAnalysisResponse(in.graphId)
+          .withVocabulary(state.vocabulary.toList)
+          .withWordFrequencies(state.wordFrequencies.map(wordFrequency => GetAnalysisResponse.WordFrequency(Some(wordFrequency.word), wordFrequency.percent)))
+      )
+
+  override def generateResponse(in: GenerateResponseRequest): Future[GenerateResponseResponse] =
+    getStateImpl(in.graphId)
+      .map(state =>
+        GenerateResponseResponse(
+          in.graphId,
+          Some(nlp.Document(
+            List(nlp.Paragraph(
+              List(nlp.Sentence(
+                Some(nlp.Phrase(
+                  List(nlp.Token.Word("Why"))
+                )),
+                Some(nlp.Token.Punctuation("?"))
+              ))
+            ))
+          ))
+        )
+      )
 }
