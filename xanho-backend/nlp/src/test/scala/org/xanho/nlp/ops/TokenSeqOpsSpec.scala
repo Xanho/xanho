@@ -5,6 +5,7 @@ import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
 import org.xanho.nlp.ops.NlpStringOps.nlpStringOps
 import org.xanho.nlp.ops.TokenSeqOps.tokenSeqOps
+import org.xanho.nlp.ops.TokenizerOps.toTokenizerOps
 
 class TokenSeqOpsSpec extends AnyFlatSpecLike with Matchers with OptionValues {
 
@@ -12,7 +13,7 @@ class TokenSeqOpsSpec extends AnyFlatSpecLike with Matchers with OptionValues {
 
   it should "interpret a phrase" in {
     val string = "Programming is fun"
-    val tokens = string.tokenStream
+    val tokens = string.tokens
 
     val phrase =
       tokens.asPhrase
@@ -22,7 +23,7 @@ class TokenSeqOpsSpec extends AnyFlatSpecLike with Matchers with OptionValues {
 
   it should "interpret a sentence" in {
     val string = "Programming is fun."
-    val tokens = string.tokenStream
+    val tokens = string.tokens
 
     val sentence =
       tokens.asSentence
@@ -32,7 +33,7 @@ class TokenSeqOpsSpec extends AnyFlatSpecLike with Matchers with OptionValues {
 
   it should "interpret a paragraph" in {
     val string = "Programming is fun!  Writing unit tests is not.  Would anyone else like to write them?"
-    val tokens = string.tokenStream
+    val tokens = string.tokens
 
     val paragraph =
       tokens.asParagraph
@@ -54,9 +55,8 @@ class TokenSeqOpsSpec extends AnyFlatSpecLike with Matchers with OptionValues {
     val string =
       """Programming is fun!  Writing unit tests is not.  Would anyone else like to write them?
         |
-        |I didn't think so.  No one likes writing unit tests.
-        |""".stripMargin
-    val tokens = string.tokenStream
+        |I didn't think so.  No one likes writing unit tests.""".stripMargin
+    val tokens = string.tokens
 
     val document =
       tokens.asDocument
@@ -84,6 +84,8 @@ class TokenSeqOpsSpec extends AnyFlatSpecLike with Matchers with OptionValues {
 
     sentence5.phrase.value.words.map(_.value).mkString(" ") shouldBe "No one likes writing unit tests"
     sentence5.punctuation.value.value shouldBe "."
+
+    document.write shouldBe string
 
 
   }
