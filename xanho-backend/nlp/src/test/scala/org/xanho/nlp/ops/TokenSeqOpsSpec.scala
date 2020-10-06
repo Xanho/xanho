@@ -3,9 +3,7 @@ package org.xanho.nlp.ops
 import org.scalatest.OptionValues
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
-import org.xanho.nlp.ops.NlpStringOps.nlpStringOps
-import org.xanho.nlp.ops.TokenSeqOps.tokenSeqOps
-import org.xanho.nlp.ops.TokenizerOps.toTokenizerOps
+import implicits._
 
 class TokenSeqOpsSpec extends AnyFlatSpecLike with Matchers with OptionValues {
 

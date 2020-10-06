@@ -1,24 +1,36 @@
 package org.xanho.nlp.ops
 
 import org.xanho.nlp.Constants
-import org.xanho.nlp.ops.IterableOps._
-import org.xanho.nlp.ops.NlpCharOps.nlpCharOps
-import org.xanho.nlp.ops.NlpStringOps._
+import implicits._
 import org.xanho.proto.nlp
-import org.xanho.proto.nlp.Token
 
 import scala.language.implicitConversions
 
 trait TokenizerOps {
-  implicit def toTokenizerOps[T: TokenizerImplicits.TokenGenerator](t: T): Tokenizer[T] =
+  implicit def toTokenizerOps[T: Tokenizer.TokenGenerator](t: T): Tokenizer[T] =
     new Tokenizer[T](t)
+
+  implicit def stringTokenizer: Tokenizer.TokenGenerator[String] = Tokenizer.StringTokenGenerator
+
+  implicit def phraseTokenizer: Tokenizer.TokenGenerator[nlp.Phrase] = Tokenizer.PhraseWriter
+
+  implicit def sentenceTokenizer: Tokenizer.TokenGenerator[nlp.Sentence] = Tokenizer.SentenceWriter
+
+  implicit def paragraphTokenizer: Tokenizer.TokenGenerator[nlp.Paragraph] = Tokenizer.ParagraphWriter
+
+  implicit def documentTokenizer: Tokenizer.TokenGenerator[nlp.Document] = Tokenizer.DocumentWriter
+
+  implicit def lineBreakTokenizer: Tokenizer.TokenGenerator[nlp.Token.LineBreak] = Tokenizer.LineBreakTokenizer
+
+  implicit def spaceTokenizer: Tokenizer.TokenGenerator[nlp.Token.Space] = Tokenizer.SpaceTokenizer
+
 }
 
 object TokenizerOps extends TokenizerOps
 
-class Tokenizer[T: TokenizerImplicits.TokenGenerator](val t: T) {
+class Tokenizer[T: Tokenizer.TokenGenerator](val t: T) {
   def tokens: Seq[nlp.Token] =
-    implicitly[TokenizerImplicits.TokenGenerator[T]].toTokens(t)
+    implicitly[Tokenizer.TokenGenerator[T]].toTokens(t)
 
   def write: String =
     tokens
@@ -33,7 +45,7 @@ class Tokenizer[T: TokenizerImplicits.TokenGenerator](val t: T) {
       .mkString
 }
 
-object TokenizerImplicits {
+object Tokenizer {
 
   import TokenizerOps._
 
@@ -41,8 +53,8 @@ object TokenizerImplicits {
     def toTokens(t: T): Seq[nlp.Token]
   }
 
-  implicit case object StringTokenGenerator extends TokenGenerator[String] {
-    override def toTokens(t: String): Seq[Token] =
+  case object StringTokenGenerator extends TokenGenerator[String] {
+    override def toTokens(t: String): Seq[nlp.Token] =
       BufferOrEmitStream[Char, nlp.Token](
         t,
         (char, currentBuffer) =>
@@ -64,7 +76,7 @@ object TokenizerImplicits {
       )
   }
 
-  implicit case object PhraseWriter extends TokenGenerator[nlp.Phrase] {
+  case object PhraseWriter extends TokenGenerator[nlp.Phrase] {
     override def toTokens(t: nlp.Phrase): Stream[nlp.Token] =
       t.words
         .map(w => nlp.Token(nlp.Token.Value.Word(w)))
@@ -77,7 +89,7 @@ object TokenizerImplicits {
         .append(t.punctuation.map(p => nlp.Token(nlp.Token.Value.Punctuation(p))))
   }
 
-  implicit case object ParagraphWriter extends TokenGenerator[nlp.Paragraph] {
+  case object ParagraphWriter extends TokenGenerator[nlp.Paragraph] {
     override def toTokens(t: nlp.Paragraph): Seq[nlp.Token] =
       t.sentences.toStream
         .map(_.tokens)
@@ -85,7 +97,7 @@ object TokenizerImplicits {
         .flatten
   }
 
-  implicit case object DocumentWriter extends TokenGenerator[nlp.Document] {
+  case object DocumentWriter extends TokenGenerator[nlp.Document] {
     override def toTokens(t: nlp.Document): Seq[nlp.Token] =
       t.paragraphs.toStream
         .map(_.tokens)
@@ -93,22 +105,22 @@ object TokenizerImplicits {
         .flatten
   }
 
-  implicit case object LineBreakTokenizer extends TokenGenerator[nlp.Token.LineBreak] {
+  case object LineBreakTokenizer extends TokenGenerator[nlp.Token.LineBreak] {
     override def toTokens(t: nlp.Token.LineBreak): Seq[nlp.Token] =
       List(nlp.Token(nlp.Token.Value.LineBreak(t)))
   }
 
-  implicit case object SpaceTokenizer extends TokenGenerator[nlp.Token.Space] {
+  case object SpaceTokenizer extends TokenGenerator[nlp.Token.Space] {
     override def toTokens(t: nlp.Token.Space): Seq[nlp.Token] =
       List(nlp.Token(nlp.Token.Value.Space(t)))
   }
 
-  implicit case object PunctuationTokenizer extends TokenGenerator[nlp.Token.Punctuation] {
+  case object PunctuationTokenizer extends TokenGenerator[nlp.Token.Punctuation] {
     override def toTokens(t: nlp.Token.Punctuation): Seq[nlp.Token] =
       List(nlp.Token(nlp.Token.Value.Punctuation(t)))
   }
 
-  implicit case object WordTokenizer extends TokenGenerator[nlp.Token.Word] {
+  case object WordTokenizer extends TokenGenerator[nlp.Token.Word] {
     override def toTokens(t: nlp.Token.Word): Seq[nlp.Token] =
       List(nlp.Token(nlp.Token.Value.Word(t)))
   }

@@ -15,8 +15,8 @@ import cloudflow.streamlets.{RoundRobinPartitioner, StreamletShape}
 import org.xanho.knowledgegraph.actor.KnowledgeGraphActor
 import org.xanho.knowledgegraph.actor.implicits._
 import org.xanho.knowledgegraph.service.proto._
-import org.xanho.proto.knowledgegraphactor.{GetState, KnowledgeGraphCommand, KnowledgeGraphState}
-import org.xanho.proto.nlp
+import org.xanho.nlp.ops.implicits._
+import org.xanho.proto.{knowledgegraphactor => kgaProtos}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Future, Promise}
@@ -44,7 +44,7 @@ class GrpcStreamlet extends AkkaServerStreamlet with Clustering {
           ClusterSharding(system.toTyped)
 
         val KnowledgeGraphActorTypeKey =
-          EntityTypeKey[KnowledgeGraphCommand]("KnowledgeGraphCommand")
+          EntityTypeKey[kgaProtos.KnowledgeGraphCommand]("KnowledgeGraphCommand")
 
         sharding.init(Entity(KnowledgeGraphActorTypeKey)(createBehavior = entityContext => KnowledgeGraphActor(entityContext.entityId)))
 
@@ -55,8 +55,8 @@ class GrpcStreamlet extends AkkaServerStreamlet with Clustering {
 
         val getStateImpl =
           (graphId: String) =>
-            sharding.entityRefFor(KnowledgeGraphActorTypeKey, graphId).ask[GetStateResponse](
-              ref => GetState(ref.toClassic)
+            sharding.entityRefFor(KnowledgeGraphActorTypeKey, graphId).ask[kgaProtos.GetStateResponse](
+              ref => kgaProtos.GetState(ref.toClassic)
             )
               .map(_.state.get) // TODO: None.get
 
@@ -107,7 +107,7 @@ class GrpcStreamlet extends AkkaServerStreamlet with Clustering {
 
 }
 
-private class KnowledgeGraphServiceStreamletImpl(ingestTextSink: Sink[IngestTextRequest, _], getStateImpl: String => Future[KnowledgeGraphState])(implicit mat: Materializer) extends KnowledgeGraphService {
+private class KnowledgeGraphServiceStreamletImpl(ingestTextSink: Sink[IngestTextRequest, _], getStateImpl: String => Future[kgaProtos.KnowledgeGraphState])(implicit mat: Materializer) extends KnowledgeGraphService {
 
   import mat.executionContext
 
@@ -134,16 +134,7 @@ private class KnowledgeGraphServiceStreamletImpl(ingestTextSink: Sink[IngestText
       .map(state =>
         GenerateResponseResponse(
           in.graphId,
-          Some(nlp.Document(
-            List(nlp.Paragraph(
-              List(nlp.Sentence(
-                Some(nlp.Phrase(
-                  List(nlp.Token.Word("Why"))
-                )),
-                Some(nlp.Token.Punctuation("?"))
-              ))
-            ))
-          ))
+          Some("Why?".tokens.asDocument)
         )
       )
 }

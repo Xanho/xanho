@@ -1,16 +1,12 @@
 package org.xanho.knowledgegraph.actor
 
-import akka.Done
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.adapter._
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, RetentionCriteria}
 import org.xanho.nlp.ops.NlpStringOps.nlpStringOps
-import org.xanho.nlp.ops.TokenSeqOps.tokenSeqOps
-import org.xanho.nlp.ops.TokenizerOps.toTokenizerOps
 import org.xanho.proto
 import org.xanho.proto.knowledgegraphactor._
-import org.xanho.proto.nlp.Text
 
 object KnowledgeGraphActor {
 
@@ -37,9 +33,6 @@ object KnowledgeGraphActor {
       .withRetention(RetentionCriteria.snapshotEvery(1, 5))
 
   def parseToResult(text: String): proto.nlp.ParseResult =
-    proto.nlp.ParseResult(
-      text = Some(Text(text)),
-      document = Some(text.tokens.asDocument)
-    )
+    text.parse
 
 }

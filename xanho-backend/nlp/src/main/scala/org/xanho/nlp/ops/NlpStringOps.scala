@@ -2,8 +2,7 @@ package org.xanho.nlp.ops
 
 
 import org.xanho.nlp.Constants
-import org.xanho.nlp.ops.TokenSeqOps.tokenSeqOps
-import org.xanho.nlp.ops.TokenizerOps.toTokenizerOps
+import implicits._
 import org.xanho.proto.nlp
 import org.xanho.proto.nlp.ParseResult
 
