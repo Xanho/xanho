@@ -3,9 +3,8 @@ package org.xanho.knowledgegraph.actor
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.adapter._
 import akka.persistence.typed.PersistenceId
-import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, RetentionCriteria}
-import org.xanho.nlp.ops.NlpStringOps.nlpStringOps
-import org.xanho.proto
+import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior}
+import org.xanho.nlp.ops.implicits._
 import org.xanho.proto.knowledgegraphactor._
 
 object KnowledgeGraphActor {
@@ -21,18 +20,16 @@ object KnowledgeGraphActor {
               .thenReply[IngestTextResponse](replyTo)(_ => IngestTextResponse())
           case GetState(replyTo, _) =>
             Effect.reply(replyTo)(GetStateResponse().withState(state))
+          case GenerateResponse(replyTo, _) =>
+            Effect.reply(replyTo)(GenerateResponseResponse(Some(ResponseGenerator.generate(state))))
         }
       },
       eventHandler = { (state, event) =>
         event match {
           case TextIngested(text, _) =>
-            state.addParseResults(parseToResult(text))
+            state.addParseResults(text.parse)
         }
       }
     )
-      .withRetention(RetentionCriteria.snapshotEvery(1, 5))
-
-  def parseToResult(text: String): proto.nlp.ParseResult =
-    text.parse
 
 }

@@ -31,6 +31,12 @@ message GetState {
   ActorReference replyTo = 1;
 }
 
+message GenerateResponse {
+  option (scalapb.message).extends = "org.xanho.proto.knowledgegraphactor.KnowledgeGraphCommand";
+
+  ActorReference replyTo = 1;
+}
+
 // Responses
 
 message IngestTextResponse {
@@ -41,6 +47,12 @@ message GetStateResponse {
   option (scalapb.message).extends = "org.xanho.proto.knowledgegraphactor.KnowledgeGraphResponse";
 
   KnowledgeGraphState state = 1;
+}
+
+message GenerateResponseResponse {
+  option (scalapb.message).extends = "org.xanho.proto.knowledgegraphactor.KnowledgeGraphResponse";
+
+  org.xanho.proto.nlp.Document document = 1;
 }
 
 // Events

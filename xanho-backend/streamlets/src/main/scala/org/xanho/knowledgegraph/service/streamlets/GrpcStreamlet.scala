@@ -1,31 +1,20 @@
 package org.xanho.knowledgegraph.service.streamlets
 
+import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.scaladsl.adapter._
-import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity, EntityTypeKey}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Keep, MergeHub, Sink, Source}
 import akka.util.Timeout
-import akka.{Done, NotUsed}
 import cloudflow.akkastream.{AkkaServerStreamlet, AkkaStreamletLogic, Clustering}
-import cloudflow.streamlets.proto.ProtoOutlet
-import cloudflow.streamlets.{RoundRobinPartitioner, StreamletShape}
-import org.xanho.knowledgegraph.actor.KnowledgeGraphActor
-import org.xanho.knowledgegraph.actor.implicits._
+import cloudflow.streamlets.StreamletShape
 import org.xanho.knowledgegraph.service.proto._
-import org.xanho.nlp.ops.implicits._
-import org.xanho.proto.{knowledgegraphactor => kgaProtos}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Future, Promise}
 import scala.util.{Failure, Success}
 
 class GrpcStreamlet extends AkkaServerStreamlet with Clustering {
-
-  val outlet: ProtoOutlet[IngestTextRequest] =
-    ProtoOutlet[IngestTextRequest]("out", RoundRobinPartitioner(_))
 
   private implicit val askTimeout: Timeout =
     Timeout(10.seconds)
@@ -40,28 +29,8 @@ class GrpcStreamlet extends AkkaServerStreamlet with Clustering {
 
       override def run(): Unit = {
 
-        val sharding: ClusterSharding =
-          ClusterSharding(system.toTyped)
-
-        val KnowledgeGraphActorTypeKey =
-          EntityTypeKey[kgaProtos.KnowledgeGraphCommand]("KnowledgeGraphCommand")
-
-        sharding.init(Entity(KnowledgeGraphActorTypeKey)(createBehavior = entityContext => KnowledgeGraphActor(entityContext.entityId)))
-
-        val reusableSink: Sink[IngestTextRequest, NotUsed] =
-          MergeHub.source[IngestTextRequest]
-            .toMat(plainSink(outlet))(Keep.left)
-            .run()
-
-        val getStateImpl =
-          (graphId: String) =>
-            sharding.entityRefFor(KnowledgeGraphActorTypeKey, graphId).ask[kgaProtos.GetStateResponse](
-              ref => kgaProtos.GetState(ref.toClassic)
-            )
-              .map(_.state.get) // TODO: None.get
-
         val grpcImpl =
-          new KnowledgeGraphServiceStreamletImpl(reusableSink, getStateImpl)
+          new GrpcService()(system.toTyped)
 
         val handler =
           KnowledgeGraphServiceHandler(grpcImpl)
@@ -103,38 +72,6 @@ class GrpcStreamlet extends AkkaServerStreamlet with Clustering {
       }
     }
 
-  override def shape(): StreamletShape = StreamletShape(outlet)
+  override def shape(): StreamletShape = StreamletShape.empty
 
-}
-
-private class KnowledgeGraphServiceStreamletImpl(ingestTextSink: Sink[IngestTextRequest, _], getStateImpl: String => Future[kgaProtos.KnowledgeGraphState])(implicit mat: Materializer) extends KnowledgeGraphService {
-
-  import mat.executionContext
-
-  override def ingestTextStream(in: Source[IngestTextRequest, NotUsed]): Future[IngestTextStreamResponse] =
-    in
-      .alsoTo(ingestTextSink)
-      .runFold(0)((c, _) => c + 1)
-      .map(IngestTextStreamResponse(_))
-
-  override def getState(in: GetStateRequest): Future[GetStateResponse] =
-    getStateImpl(in.graphId)
-      .map(state => GetStateResponse(in.graphId, Some(state)))
-
-  override def getAnalysis(in: GetAnalysisRequest): Future[GetAnalysisResponse] =
-    getStateImpl(in.graphId)
-      .map(state =>
-        GetAnalysisResponse(in.graphId)
-          .withVocabulary(state.vocabulary.toList)
-          .withWordFrequencies(state.wordFrequencies.map(wordFrequency => GetAnalysisResponse.WordFrequency(Some(wordFrequency.word), wordFrequency.percent)))
-      )
-
-  override def generateResponse(in: GenerateResponseRequest): Future[GenerateResponseResponse] =
-    getStateImpl(in.graphId)
-      .map(state =>
-        GenerateResponseResponse(
-          in.graphId,
-          Some("Why?".tokens.asDocument)
-        )
-      )
 }

@@ -57,6 +57,7 @@ object LocalServiceTest extends App {
       client.getAnalysis(GetAnalysisRequest(graphId = graphId)).await
 
     log.debug("analysis={}", analysis)
+
   }
 
   system.terminate()
