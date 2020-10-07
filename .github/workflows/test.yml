@@ -18,4 +18,5 @@ jobs:
       with:
         java-version: 1.11
     - name: Run tests
+      working-directory: ./xanho-backend
       run: sbt test
