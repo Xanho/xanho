@@ -24,9 +24,6 @@ jobs:
           service_account_key: ${{ secrets.GKE_SA_KEY }}
           project_id: ${{ secrets.GKE_PROJECT }}
 
-      - run: |-
-          gcloud --quiet auth
-
       - name: Run tests
         working-directory: ./xanho-backend
         run: sbt test
