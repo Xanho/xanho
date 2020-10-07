@@ -7,7 +7,7 @@ env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
   GKE_CLUSTER: xanho
   GKE_ZONE: us-central1-c
-  DEPLOYMENT_NAME: xanho-server
+  DEPLOYMENT_NAME: xanho-backend
   IMAGE: xanho-server
 
 jobs:
