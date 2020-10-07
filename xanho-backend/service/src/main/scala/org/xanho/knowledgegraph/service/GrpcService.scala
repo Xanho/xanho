@@ -1,4 +1,4 @@
-package org.xanho.knowledgegraph.service.streamlets
+package org.xanho.knowledgegraph.service
 
 import akka.NotUsed
 import akka.actor.typed.ActorSystem

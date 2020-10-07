@@ -2,7 +2,7 @@ name := "xanho-backend"
 
 version := "0.1"
 
-scalaVersion := "2.12.12"
+scalaVersion := "2.13.3"
 
 lazy val root =
   Project(id = "root", base = file("."))
@@ -18,21 +18,16 @@ lazy val root =
       protos,
       knowledgeGraphActor,
       knowledgeGraphServiceProtos,
-      streamlets,
+      service,
       knowledgeGraphServiceTest,
-      blueprint,
       firestoreClient,
       firestoreAkkaPersistence,
     )
 
 val commonSettings =
   Seq(
-    libraryDependencies ++= Seq(
-      "ch.qos.logback" % "logback-classic" % "1.2.3",
-    ),
-    libraryDependencies ++= Seq(
-      Dependencies.scalaTest
-    ),
+    libraryDependencies ++= Seq(Dependencies.logging),
+    libraryDependencies ++= Seq(Dependencies.scalaTest),
     dependencyOverrides ++= Seq(
       Dependencies.akkaModule("discovery"),
     ),
@@ -40,7 +35,7 @@ val commonSettings =
 
 lazy val protos =
   project
-    .enablePlugins(AkkaGrpcPlugin, CloudflowLibraryPlugin)
+    .enablePlugins(AkkaGrpcPlugin)
     .settings(commonSettings: _*)
     .dependsOn(akkaGrpcCompat)
     .settings(
@@ -52,13 +47,12 @@ lazy val protos =
 
 lazy val nlp =
   project
-    .enablePlugins(CloudflowLibraryPlugin)
     .settings(commonSettings: _*)
     .dependsOn(protos)
 
 lazy val akkaGrpcCompat =
   project
-    .enablePlugins(AkkaGrpcPlugin, CloudflowLibraryPlugin)
+    .enablePlugins(AkkaGrpcPlugin)
     .settings(commonSettings: _*)
     .settings(
       libraryDependencies ++= Seq(
@@ -69,7 +63,6 @@ lazy val akkaGrpcCompat =
 
 lazy val knowledgeGraphActor =
   project
-    .enablePlugins(CloudflowLibraryPlugin)
     .settings(commonSettings: _*)
     .dependsOn(nlp, protos)
     .settings(
@@ -85,13 +78,13 @@ lazy val knowledgeGraphActor =
 
 lazy val knowledgeGraphServiceProtos =
   project
-    .enablePlugins(AkkaGrpcPlugin, CloudflowLibraryPlugin)
+    .enablePlugins(AkkaGrpcPlugin)
     .settings(commonSettings: _*)
     .dependsOn(protos)
 
-lazy val streamlets =
+lazy val service =
   project
-    .enablePlugins(AkkaGrpcPlugin, CloudflowAkkaPlugin)
+    .enablePlugins(AkkaGrpcPlugin)
     .settings(commonSettings: _*)
     .dependsOn(protos, knowledgeGraphActor, knowledgeGraphServiceProtos, firestoreAkkaPersistence)
     .settings(
@@ -104,11 +97,12 @@ lazy val streamlets =
         Dependencies.akkaModule("testkit"),
         Dependencies.akkaModule("stream-testkit"),
       ),
+      libraryDependencies ++= Dependencies.akkaHttp
     )
 
 lazy val knowledgeGraphServiceTest =
   project
-    .enablePlugins(AkkaGrpcPlugin, CloudflowLibraryPlugin)
+    .enablePlugins(AkkaGrpcPlugin)
     .settings(commonSettings: _*)
     .dependsOn(protos, knowledgeGraphActor, knowledgeGraphServiceProtos)
     .settings(
@@ -116,11 +110,6 @@ lazy val knowledgeGraphServiceTest =
         Dependencies.logging,
       ),
     )
-
-lazy val blueprint =
-  project
-    .enablePlugins(CloudflowApplicationPlugin)
-    .settings(commonSettings: _*)
 
 lazy val firestoreClient =
   project

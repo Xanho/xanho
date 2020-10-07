@@ -1,4 +1,4 @@
-package org.xanho.knowledgegraph.service.streamlets
+package org.xanho.knowledgegraph.service
 
 import akka.Done
 import akka.actor.typed.{ActorSystem, Extension, ExtensionId}
