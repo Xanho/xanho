@@ -84,7 +84,7 @@ lazy val knowledgeGraphServiceProtos =
 
 lazy val service =
   project
-    .enablePlugins(AkkaGrpcPlugin)
+    .enablePlugins(AkkaGrpcPlugin, DockerPlugin, JavaAppPackaging)
     .settings(commonSettings: _*)
     .dependsOn(protos, knowledgeGraphActor, knowledgeGraphServiceProtos, firestoreAkkaPersistence)
     .settings(
@@ -98,6 +98,9 @@ lazy val service =
         Dependencies.akkaModule("stream-testkit"),
       ),
       libraryDependencies ++= Dependencies.akkaHttp
+    )
+    .settings(
+      dockerExposedPorts := Seq(8080, 2551)
     )
 
 lazy val knowledgeGraphServiceTest =
