@@ -1,4 +1,4 @@
-name: Build and Deploy to GKE
+name: xanho-backend Deploy
 
 on:
   workflow_dispatch:
@@ -21,7 +21,7 @@ jobs:
 
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
-          version: '290.0.1'
+          version: "290.0.1"
           service_account_key: ${{ secrets.GKE_SA_KEY }}
           project_id: ${{ secrets.GKE_PROJECT }}
 
@@ -31,17 +31,13 @@ jobs:
       - run: |-
           gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
 
-      - run: |-
-          cd xanho-backend
-
       - name: SbtBuild
-        run : |-
+        working-directory: ./xanho-backend
+        run: |-
           sbt service/docker:stage
 
-      - run: |-
-          cd service/target/docker/stage
-
       - name: DockerBuild
+        working-directory: ./xanho-backend/service/target/docker/stage
         run: |-
           docker build \
             --tag "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA" \
@@ -50,6 +46,7 @@ jobs:
             .
 
       - name: Publish
+        working-directory: ./xanho-backend/service/target/docker/stage
         run: |-
           docker push "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA"
 
