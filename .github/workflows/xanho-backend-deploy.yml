@@ -7,8 +7,8 @@ env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
   GKE_CLUSTER: xanho
   GKE_ZONE: us-central1-c
-  DEPLOYMENT_NAME: xanho-server
-  IMAGE: xanho-server
+  DEPLOYMENT_NAME: xanho-backend
+  IMAGE: xanho-backend
 
 jobs:
   setup-build-publish-deploy:
@@ -51,11 +51,13 @@ jobs:
           docker push "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA"
 
       - name: Set up Kustomize
+        working-directory: ./xanho-backend/deploy/kubernetes
         run: |-
           curl -sfLo kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
           chmod u+x ./kustomize
 
       - name: Deploy
+        working-directory: ./xanho-backend/deploy/kubernetes
         run: |-
           ./kustomize edit set image gcr.io/PROJECT_ID/IMAGE:TAG=gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA
           ./kustomize build . | kubectl apply -f -
