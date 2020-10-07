@@ -33,6 +33,9 @@ jobs:
       - run: |-
           gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
 
+      - run: |-
+          cd xanho-backend
+
       - name: SbtBuild
         run : |-
           sbt service/docker:stage
