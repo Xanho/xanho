@@ -2,8 +2,7 @@ package org.xanho.knowledgegraph.actor.implicits
 
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
-import org.xanho.knowledgegraph.actor.KnowledgeGraphActor
-import org.xanho.knowledgegraph.actor.implicits._
+import org.xanho.nlp.ops.implicits._
 import org.xanho.proto.knowledgegraphactor.KnowledgeGraphState
 
 class KnowledgeGraphOpsSpec extends AnyFlatSpecLike with Matchers {
@@ -17,7 +16,7 @@ class KnowledgeGraphOpsSpec extends AnyFlatSpecLike with Matchers {
         |""".stripMargin
 
     val parseResult =
-      KnowledgeGraphActor.parseToResult(input)
+      input.parse
 
     val knowledgeGraphState =
       KnowledgeGraphState(List(parseResult))

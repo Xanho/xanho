@@ -1,14 +1,11 @@
 package org.xanho.knowledgegraph.actor
 
-import akka.Done
 import akka.actor.typed.Behavior
+import akka.actor.typed.scaladsl.adapter._
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior}
-import org.xanho.proto.knowledgegraphactor.{GetState, IngestText, KnowledgeGraphCommand, KnowledgeGraphEvent, KnowledgeGraphState, TextIngested}
-import akka.actor.typed.scaladsl.adapter._
-import org.xanho.nlp.NLP
-import org.xanho.proto
-import org.xanho.proto.nlp.{Phrase, Text}
+import org.xanho.nlp.ops.implicits._
+import org.xanho.proto.knowledgegraphactor._
 
 object KnowledgeGraphActor {
 
@@ -20,30 +17,19 @@ object KnowledgeGraphActor {
         command match {
           case IngestText(replyTo, text, _) =>
             Effect.persist[KnowledgeGraphEvent, KnowledgeGraphState](TextIngested(text))
-              .thenReply[Done](replyTo)(_ => Done)
+              .thenReply[IngestTextResponse](replyTo)(_ => IngestTextResponse())
           case GetState(replyTo, _) =>
-            Effect.reply(replyTo)(state)
+            Effect.reply(replyTo)(GetStateResponse().withState(state))
+          case GenerateResponse(replyTo, _) =>
+            Effect.reply(replyTo)(GenerateResponseResponse(Some(ResponseGenerator.generate(state))))
         }
       },
       eventHandler = { (state, event) =>
         event match {
           case TextIngested(text, _) =>
-            state.copy(parseResults = state.parseResults :+ parseToResult(text))
+            state.addParseResults(text.parse)
         }
       }
-    )
-
-  def parseToResult(text: String): proto.nlp.ParseResult =
-    proto.nlp.ParseResult(
-      text = Some(Text(text)),
-      sentences =
-        NLP.parse(text)
-          .map(s =>
-            proto.nlp.Sentence(
-              Some(Phrase(s.phrase.map(w => proto.nlp.Token.Word(w.value)))),
-              s.punctuation.map(p => proto.nlp.Token.Punctuation(p.value))
-            )
-          )
     )
 
 }

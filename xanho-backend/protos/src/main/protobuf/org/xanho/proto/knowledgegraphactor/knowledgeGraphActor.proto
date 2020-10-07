@@ -11,8 +11,9 @@ option (scalapb.options) = {
   package_name: "org.xanho.proto.knowledgegraphactor"
   flat_package: true
   single_file: true
-  preamble: "sealed trait KnowledgeGraphCommand"
-  preamble: "sealed trait KnowledgeGraphEvent"
+  preamble: "sealed trait KnowledgeGraphCommand extends scalapb.GeneratedMessage"
+  preamble: "sealed trait KnowledgeGraphEvent extends scalapb.GeneratedMessage"
+  preamble: "sealed trait KnowledgeGraphResponse extends scalapb.GeneratedMessage"
 };
 
 // Commands
@@ -28,6 +29,30 @@ message GetState {
   option (scalapb.message).extends = "org.xanho.proto.knowledgegraphactor.KnowledgeGraphCommand";
 
   ActorReference replyTo = 1;
+}
+
+message GenerateResponse {
+  option (scalapb.message).extends = "org.xanho.proto.knowledgegraphactor.KnowledgeGraphCommand";
+
+  ActorReference replyTo = 1;
+}
+
+// Responses
+
+message IngestTextResponse {
+  option (scalapb.message).extends = "org.xanho.proto.knowledgegraphactor.KnowledgeGraphResponse";
+}
+
+message GetStateResponse {
+  option (scalapb.message).extends = "org.xanho.proto.knowledgegraphactor.KnowledgeGraphResponse";
+
+  KnowledgeGraphState state = 1;
+}
+
+message GenerateResponseResponse {
+  option (scalapb.message).extends = "org.xanho.proto.knowledgegraphactor.KnowledgeGraphResponse";
+
+  org.xanho.proto.nlp.Document document = 1;
 }
 
 // Events
