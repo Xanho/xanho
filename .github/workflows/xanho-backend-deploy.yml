@@ -8,7 +8,7 @@ env:
   GKE_CLUSTER: xanho
   GKE_ZONE: us-central1-c
   DEPLOYMENT_NAME: xanho-backend
-  IMAGE: xanho-server
+  IMAGE: xanho-backend
 
 jobs:
   setup-build-publish-deploy:
