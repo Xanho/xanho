@@ -34,7 +34,7 @@ jobs:
       - name: SbtBuild
         working-directory: ./xanho-backend
         run: |-
-          sbt service/docker:stage
+          sbt serviceKubernetes/docker:stage
 
       - name: DockerBuild
         working-directory: ./xanho-backend/serviceKubernetes/target/docker/stage
