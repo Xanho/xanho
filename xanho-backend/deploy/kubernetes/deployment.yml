@@ -52,11 +52,11 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: "metadata.labels['app']"
-        - name: NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: REQUIRED_CONTACT_POINT_NR
-          value: "2"
-        - name: GOOGLE_PROJECT_ID
-          value: "xanho-151422"
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: REQUIRED_CONTACT_POINT_NR
+              value: "2"
+            - name: GOOGLE_PROJECT_ID
+              value: "xanho-151422"
