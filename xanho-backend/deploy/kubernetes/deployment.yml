@@ -23,7 +23,7 @@ spec:
           image: gcr.io/PROJECT_ID/IMAGE:TAG
           ports:
             - name: remoting
-              containerPort: 2552
+              containerPort: 25520
               protocol: TCP
             - name: management
               containerPort: 8558
