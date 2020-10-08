@@ -41,10 +41,8 @@ spec:
               port: management
           resources:
             requests:
-              cpu: 250m
               memory: 1024m
             limits:
-              cpu: 500m
               memory: 1024m
           env:
             - name: AKKA_CLUSTER_BOOTSTRAP_SERVICE_NAME
