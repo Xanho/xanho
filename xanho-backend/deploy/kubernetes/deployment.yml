@@ -31,11 +31,19 @@ spec:
             - name: app
               containerPort: 8080
               protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: management
+          livenessProbe:
+            httpGet:
+              path: /alive
+              port: management
           resources:
             requests:
-              memory: 1024m
+              memory: 1024Mi
             limits:
-              memory: 1024m
+              memory: 1024Mi
           env:
             - name: AKKA_CLUSTER_BOOTSTRAP_SERVICE_NAME
               valueFrom:
