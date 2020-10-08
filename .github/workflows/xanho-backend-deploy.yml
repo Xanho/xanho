@@ -2,6 +2,10 @@ name: xanho-backend Deploy
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'GitHub SHA/Tag from a Build job'
+        required: true
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
@@ -11,8 +15,8 @@ env:
   IMAGE: xanho-backend
 
 jobs:
-  setup-build-publish-deploy:
-    name: Setup, Build, Publish, and Deploy
+  deploy:
+    name: Deploy
     runs-on: ubuntu-latest
 
     steps:
@@ -31,25 +35,6 @@ jobs:
       - run: |-
           gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
 
-      - name: SbtBuild
-        working-directory: ./xanho-backend
-        run: |-
-          sbt serviceKubernetes/docker:stage
-
-      - name: DockerBuild
-        working-directory: ./xanho-backend/serviceKubernetes/target/docker/stage
-        run: |-
-          docker build \
-            --tag "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA" \
-            --build-arg GITHUB_SHA="$GITHUB_SHA" \
-            --build-arg GITHUB_REF="$GITHUB_REF" \
-            .
-
-      - name: Publish
-        working-directory: ./xanho-backend/serviceKubernetes/target/docker/stage
-        run: |-
-          docker push "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA"
-
       - name: Set up Kustomize
         working-directory: ./xanho-backend/deploy/kubernetes
         run: |-
@@ -59,7 +44,7 @@ jobs:
       - name: Deploy
         working-directory: ./xanho-backend/deploy/kubernetes
         run: |-
-          ./kustomize edit set image gcr.io/PROJECT_ID/IMAGE:TAG=gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA
+          ./kustomize edit set image gcr.io/PROJECT_ID/IMAGE:TAG=gcr.io/$PROJECT_ID/$IMAGE:${{ github.event.inputs.tag }}
           ./kustomize build . | kubectl apply -n xanho-backend -f -
           kubectl rollout status -n xanho-backend deployment/$DEPLOYMENT_NAME
           kubectl get services -n xanho-backend -o wide
