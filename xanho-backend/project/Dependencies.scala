@@ -18,6 +18,9 @@ object Dependencies {
   val akkaManagementClusterHttp =
     "com.lightbend.akka.management" %% "akka-management-cluster-http" % "1.0.8"
 
+  val akkaManagementClusterBootstrap =
+    "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % "1.0.8"
+
   val akkaDiscoveryKubernetesApi =
     "com.lightbend.akka.discovery" %% "akka-discovery-kubernetes-api" % "1.0.8"
 

@@ -72,7 +72,6 @@ lazy val knowledgeGraphActor =
       ),
       libraryDependencies ++= Seq(
         Dependencies.akkaModule("persistence-testkit") % Test,
-        "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8" % Test
       )
     )
 
@@ -118,11 +117,13 @@ lazy val serviceKubernetes =
     .settings(
       libraryDependencies ++= Seq(
         Dependencies.akkaManagementClusterHttp,
+        Dependencies.akkaManagementClusterBootstrap,
         Dependencies.akkaDiscoveryKubernetesApi,
       )
     )
     .settings(
-      dockerExposedPorts := Seq(8080, 2551)
+      dockerBaseImage := "adoptopenjdk:11-jre-hotspot",
+      dockerExposedPorts := Seq(8080, 8558, 25520)
     )
 
 lazy val knowledgeGraphServiceTest =
