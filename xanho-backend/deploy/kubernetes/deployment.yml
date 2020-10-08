@@ -4,16 +4,17 @@ metadata:
   namespace: xanho-backend
   name: xanho-backend
 spec:
-  replicas: 1
+  replicas: 2
   strategy:
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 1
+      maxUnavailable: 0
   minReadySeconds: 5
   template:
     metadata:
       labels:
         app: xanho-backend
+        actorSystemName: xanho-backend
     spec:
       serviceAccountName: xanho-backend-sa
       automountServiceAccountToken: false
@@ -21,12 +22,41 @@ spec:
         - name: xanho-backend
           image: gcr.io/PROJECT_ID/IMAGE:TAG
           ports:
-            - containerPort: 8080
-            - containerPort: 2551
+            - name: remoting
+              containerPort: 2552
+              protocol: TCP
+            - name: management
+              containerPort: 8558
+              protocol: TCP
+            - name: app
+              containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: management
+          livenessProbe:
+            httpGet:
+              path: /alive
+              port: management
           resources:
             requests:
-              cpu: 500m
-              memory: 512Mi
+              cpu: 250m
+              memory: 256m
             limits:
-              cpu: 1000m
-              memory: 1024Mi
+              cpu: 500m
+              memory: 512m
+          env:
+            - name: AKKA_CLUSTER_BOOTSTRAP_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: "metadata.labels['app']"
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: REQUIRED_CONTACT_POINT_NR
+          value: "2"
+        - name: GOOGLE_PROJECT_ID
+          value: "xanho-151422"

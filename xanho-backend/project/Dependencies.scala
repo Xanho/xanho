@@ -15,7 +15,19 @@ object Dependencies {
       "com.typesafe.akka" %% s"akka-http2-support" % AkkaHttpVersion
     )
 
+  val akkaManagementClusterHttp =
+    "com.lightbend.akka.management" %% "akka-management-cluster-http" % "1.0.8"
+
+  val akkaManagementClusterBootstrap =
+    "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % "1.0.8"
+
+  val akkaDiscoveryKubernetesApi =
+    "com.lightbend.akka.discovery" %% "akka-discovery-kubernetes-api" % "1.0.8"
+
   val scalaTest: ModuleID =
     "org.scalatest" %% "scalatest" % "3.2.0" % "test"
+
+  val levelDb =
+    "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
 
 }

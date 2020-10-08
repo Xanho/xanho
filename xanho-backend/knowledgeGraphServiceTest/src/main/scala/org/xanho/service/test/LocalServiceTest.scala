@@ -24,7 +24,7 @@ object LocalServiceTest extends App {
     KnowledgeGraphServiceClient(GrpcClientSettings.connectToServiceAt("localhost", 8080).withTls(false))
 
   val graphId =
-    "graph1"
+    "graph2"
 
   while (true) {
 
