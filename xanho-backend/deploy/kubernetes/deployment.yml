@@ -1,6 +1,7 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
+  namespace: xanho-backend
   name: xanho-backend
 spec:
   replicas: 1
@@ -14,6 +15,8 @@ spec:
       labels:
         app: xanho-backend
     spec:
+      serviceAccountName: xanho-backend-sa
+      automountServiceAccountToken: false
       containers:
         - name: xanho-backend
           image: gcr.io/PROJECT_ID/IMAGE:TAG
