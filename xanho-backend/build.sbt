@@ -18,7 +18,7 @@ lazy val root =
       protos,
       knowledgeGraphActor,
       knowledgeGraphServiceProtos,
-      service,
+      serviceLib,
       knowledgeGraphServiceTest,
       firestoreClient,
       firestoreAkkaPersistence,
@@ -82,9 +82,9 @@ lazy val knowledgeGraphServiceProtos =
     .settings(commonSettings: _*)
     .dependsOn(protos)
 
-lazy val service =
+lazy val serviceLib =
   project
-    .enablePlugins(AkkaGrpcPlugin, DockerPlugin, JavaAppPackaging)
+    .enablePlugins(AkkaGrpcPlugin)
     .settings(commonSettings: _*)
     .dependsOn(protos, knowledgeGraphActor, knowledgeGraphServiceProtos, firestoreAkkaPersistence)
     .settings(
@@ -98,6 +98,28 @@ lazy val service =
         Dependencies.akkaModule("stream-testkit"),
       ),
       libraryDependencies ++= Dependencies.akkaHttp
+    )
+
+lazy val serviceLocal =
+  project
+    .dependsOn(serviceLib)
+    .settings(commonSettings: _*)
+    .settings(
+      libraryDependencies ++= Seq(
+        Dependencies.levelDb,
+      )
+    )
+
+lazy val serviceKubernetes =
+  project
+    .enablePlugins(DockerPlugin, JavaAppPackaging)
+    .dependsOn(serviceLib)
+    .settings(commonSettings: _*)
+    .settings(
+      libraryDependencies ++= Seq(
+        Dependencies.akkaManagementClusterHttp,
+        Dependencies.akkaDiscoveryKubernetesApi,
+      )
     )
     .settings(
       dockerExposedPorts := Seq(8080, 2551)
