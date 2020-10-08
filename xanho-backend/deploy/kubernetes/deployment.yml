@@ -31,14 +31,6 @@ spec:
             - name: app
               containerPort: 8080
               protocol: TCP
-          readinessProbe:
-            httpGet:
-              path: /ready
-              port: management
-          livenessProbe:
-            httpGet:
-              path: /alive
-              port: management
           resources:
             requests:
               memory: 1024m
