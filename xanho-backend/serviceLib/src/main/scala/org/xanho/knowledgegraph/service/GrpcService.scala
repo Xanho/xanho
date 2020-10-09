@@ -3,7 +3,7 @@ package org.xanho.knowledgegraph.service
 import akka.NotUsed
 import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.Source
-import org.xanho.proto.service.knowledgegraph.{GenerateResponseRequest, GenerateResponseResponse, GetAnalysisRequest, GetAnalysisResponse, GetStateRequest, GetStateResponse, IngestTextRequest, IngestTextStreamResponse, KnowledgeGraphService}
+import org.xanho.proto.service.knowledgegraph.{GenerateResponseRequest, GenerateResponseResponse, GetAnalysisRequest, GetAnalysisResponse, IngestTextRequest, IngestTextStreamResponse, KnowledgeGraphService}
 
 import scala.concurrent.Future
 
@@ -21,10 +21,6 @@ class GrpcService()(implicit system: ActorSystem[_]) extends KnowledgeGraphServi
       )
       .runFold(0)((c, _) => c + 1)
       .map(IngestTextStreamResponse(_))
-
-  override def getState(in: GetStateRequest): Future[GetStateResponse] =
-    knowledgeGraphDao.getState(in.graphId)
-      .map(state => GetStateResponse(in.graphId, Some(state)))
 
   override def getAnalysis(in: GetAnalysisRequest): Future[GetAnalysisResponse] =
     knowledgeGraphDao.getAnalysis(in.graphId)

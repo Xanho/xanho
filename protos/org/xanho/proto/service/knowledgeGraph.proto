@@ -3,13 +3,10 @@ syntax = "proto3";
 package org.xanho.proto.service.knowledgegraph;
 
 import "org/xanho/proto/nlp/nlp.proto";
-import "org/xanho/proto/knowledgegraphactor/knowledgeGraphActor.proto";
 
 service KnowledgeGraphService {
 
   rpc IngestTextStream(stream IngestTextRequest) returns (IngestTextStreamResponse);
-
-  rpc GetState(GetStateRequest) returns (GetStateResponse);
 
   rpc GetAnalysis(GetAnalysisRequest) returns (GetAnalysisResponse);
 
@@ -24,15 +21,6 @@ message IngestTextRequest {
 
 message IngestTextStreamResponse {
   int32 processedCount = 1;
-}
-
-message GetStateRequest {
-  string graphId = 1;
-}
-
-message GetStateResponse {
-  string graphId = 1;
-  org.xanho.proto.knowledgegraphactor.KnowledgeGraphState state = 2;
 }
 
 message GetAnalysisRequest {

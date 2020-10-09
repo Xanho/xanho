@@ -54,11 +54,6 @@ object LocalServiceTest extends App {
       )
         .await
 
-    val state =
-      client.getState(GetStateRequest(graphId = graphId)).await
-
-    log.debug("state={}", state)
-
     val analysis =
       client.getAnalysis(GetAnalysisRequest(graphId = graphId)).await
 

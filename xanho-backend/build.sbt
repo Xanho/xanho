@@ -36,10 +36,8 @@ lazy val protos =
   project
     .enablePlugins(AkkaGrpcPlugin)
     .settings(commonSettings: _*)
-    .dependsOn(akkaGrpcCompat)
     .settings(
       libraryDependencies ++= Seq(
-        Dependencies.akkaModule("actor"),
         "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
       ),
       PB.protoSources in Compile ++= Seq(
@@ -65,8 +63,9 @@ lazy val akkaGrpcCompat =
 
 lazy val knowledgeGraphActor =
   project
+    .enablePlugins(AkkaGrpcPlugin)
     .settings(commonSettings: _*)
-    .dependsOn(nlp, protos)
+    .dependsOn(nlp, protos, akkaGrpcCompat)
     .settings(
       libraryDependencies ++= Seq(
         Dependencies.akkaModule("actor-typed"),
