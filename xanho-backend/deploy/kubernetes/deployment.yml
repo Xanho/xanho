@@ -35,10 +35,16 @@ spec:
             httpGet:
               path: /ready
               port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
           livenessProbe:
             httpGet:
               path: /alive
               port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
           resources:
             requests:
               memory: 768Mi
