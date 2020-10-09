@@ -31,6 +31,9 @@ spec:
             - name: app
               containerPort: 8080
               protocol: TCP
+          volumeMounts:
+            - name: varlog
+              mountPath: /var/log
           readinessProbe:
             httpGet:
               path: /ready
@@ -58,3 +61,12 @@ spec:
               value: "2"
             - name: GOOGLE_PROJECT_ID
               value: "xanho-151422"
+        - name: log-out
+          image: busybox
+          args: [ /bin/sh, -c, 'tail -n+1 -f /var/log/xanho-backend.log' ]
+          volumeMounts:
+            - name: varlog
+              mountPath: /var/log
+      volumes:
+        - name: varlog
+          emptyDir: { }
