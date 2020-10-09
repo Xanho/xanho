@@ -5,7 +5,7 @@ import akka.actor.CoordinatedShutdown
 import akka.actor.typed.{ActorSystem, Extension}
 import akka.http.scaladsl.Http
 import org.slf4j.{Logger, LoggerFactory}
-import org.xanho.knowledgegraph.service.proto.KnowledgeGraphServiceHandler
+import org.xanho.proto.service.knowledgegraph.KnowledgeGraphServiceHandler
 
 import scala.concurrent.{Future, Promise}
 import scala.util.{Failure, Success}

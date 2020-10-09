@@ -2,15 +2,6 @@ syntax = "proto3";
 
 package org.xanho.proto.nlp;
 
-import "scalapb/scalapb.proto";
-
-option (scalapb.options) = {
-  scope: FILE
-  package_name: "org.xanho.proto.nlp"
-  flat_package: true
-  single_file: true
-};
-
 message Text {
   string text = 1;
 }

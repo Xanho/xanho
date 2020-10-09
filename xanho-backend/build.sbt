@@ -17,7 +17,6 @@ lazy val root =
       akkaGrpcCompat,
       protos,
       knowledgeGraphActor,
-      knowledgeGraphServiceProtos,
       serviceLib,
       knowledgeGraphServiceTest,
       firestoreClient,
@@ -37,11 +36,12 @@ lazy val protos =
   project
     .enablePlugins(AkkaGrpcPlugin)
     .settings(commonSettings: _*)
-    .dependsOn(akkaGrpcCompat)
     .settings(
       libraryDependencies ++= Seq(
-        Dependencies.akkaModule("actor"),
         "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
+      ),
+      PB.protoSources in Compile ++= Seq(
+        file("../protos")
       ),
     )
 
@@ -63,8 +63,9 @@ lazy val akkaGrpcCompat =
 
 lazy val knowledgeGraphActor =
   project
+    .enablePlugins(AkkaGrpcPlugin)
     .settings(commonSettings: _*)
-    .dependsOn(nlp, protos)
+    .dependsOn(nlp, protos, akkaGrpcCompat)
     .settings(
       libraryDependencies ++= Seq(
         Dependencies.akkaModule("actor-typed"),
@@ -75,17 +76,11 @@ lazy val knowledgeGraphActor =
       )
     )
 
-lazy val knowledgeGraphServiceProtos =
-  project
-    .enablePlugins(AkkaGrpcPlugin)
-    .settings(commonSettings: _*)
-    .dependsOn(protos)
-
 lazy val serviceLib =
   project
     .enablePlugins(AkkaGrpcPlugin)
     .settings(commonSettings: _*)
-    .dependsOn(protos, knowledgeGraphActor, knowledgeGraphServiceProtos, firestoreAkkaPersistence)
+    .dependsOn(protos, knowledgeGraphActor, firestoreAkkaPersistence)
     .settings(
       libraryDependencies ++= Seq(
         Dependencies.logging,
@@ -133,7 +128,7 @@ lazy val knowledgeGraphServiceTest =
   project
     .enablePlugins(AkkaGrpcPlugin)
     .settings(commonSettings: _*)
-    .dependsOn(protos, knowledgeGraphActor, knowledgeGraphServiceProtos)
+    .dependsOn(protos, knowledgeGraphActor)
     .settings(
       libraryDependencies ++= Seq(
         Dependencies.logging,
