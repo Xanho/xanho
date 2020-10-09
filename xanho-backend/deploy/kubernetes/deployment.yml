@@ -31,9 +31,6 @@ spec:
             - name: app
               containerPort: 8080
               protocol: TCP
-          volumeMounts:
-            - name: varlog
-              mountPath: /var/log
           readinessProbe:
             httpGet:
               path: /ready
@@ -44,9 +41,9 @@ spec:
               port: management
           resources:
             requests:
-              memory: 1024Mi
+              memory: 768Mi
             limits:
-              memory: 1024Mi
+              memory: 768Mi
           env:
             - name: AKKA_CLUSTER_BOOTSTRAP_SERVICE_NAME
               valueFrom:
@@ -61,12 +58,3 @@ spec:
               value: "2"
             - name: GOOGLE_PROJECT_ID
               value: "xanho-151422"
-        - name: log-out
-          image: busybox
-          args: [ /bin/sh, -c, 'tail -n+1 -f /var/log/xanho-backend.log' ]
-          volumeMounts:
-            - name: varlog
-              mountPath: /var/log
-      volumes:
-        - name: varlog
-          emptyDir: { }
