@@ -20,8 +20,14 @@ object LocalServiceTest extends App {
   private val log: Logger =
     LoggerFactory.getLogger(this.getClass)
 
+  private val host =
+    system.settings.config.getString("service.host")
+
+  private val port =
+    system.settings.config.getInt("service.port")
+
   val client =
-    KnowledgeGraphServiceClient(GrpcClientSettings.connectToServiceAt("localhost", 8080).withTls(false))
+    KnowledgeGraphServiceClient(GrpcClientSettings.connectToServiceAt(host, port).withTls(false))
 
   val graphId =
     "graph2"

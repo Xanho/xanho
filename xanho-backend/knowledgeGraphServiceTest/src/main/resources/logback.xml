@@ -10,7 +10,7 @@
     <logger name="io.grpc.netty" level="info" />
     <logger name="org.xanho" level="debug" />
 
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>
