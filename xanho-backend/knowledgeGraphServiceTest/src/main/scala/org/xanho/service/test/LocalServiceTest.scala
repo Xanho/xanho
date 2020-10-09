@@ -5,7 +5,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.grpc.GrpcClientSettings
 import akka.stream.scaladsl.Source
 import org.slf4j.{Logger, LoggerFactory}
-import org.xanho.knowledgegraph.service.proto._
+import org.xanho.proto.service.knowledgegraph._
 import org.xanho.nlp.ops.TokenizerOps._
 
 import scala.concurrent.duration._

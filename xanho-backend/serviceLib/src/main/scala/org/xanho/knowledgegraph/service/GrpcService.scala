@@ -3,7 +3,7 @@ package org.xanho.knowledgegraph.service
 import akka.NotUsed
 import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.Source
-import org.xanho.knowledgegraph.service.proto.{GenerateResponseRequest, GenerateResponseResponse, GetAnalysisRequest, GetAnalysisResponse, GetStateRequest, GetStateResponse, IngestTextRequest, IngestTextStreamResponse, KnowledgeGraphService}
+import org.xanho.proto.service.knowledgegraph.{GenerateResponseRequest, GenerateResponseResponse, GetAnalysisRequest, GetAnalysisResponse, GetStateRequest, GetStateResponse, IngestTextRequest, IngestTextStreamResponse, KnowledgeGraphService}
 
 import scala.concurrent.Future
 

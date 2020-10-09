@@ -17,7 +17,6 @@ lazy val root =
       akkaGrpcCompat,
       protos,
       knowledgeGraphActor,
-      knowledgeGraphServiceProtos,
       serviceLib,
       knowledgeGraphServiceTest,
       firestoreClient,
@@ -75,17 +74,11 @@ lazy val knowledgeGraphActor =
       )
     )
 
-lazy val knowledgeGraphServiceProtos =
-  project
-    .enablePlugins(AkkaGrpcPlugin)
-    .settings(commonSettings: _*)
-    .dependsOn(protos)
-
 lazy val serviceLib =
   project
     .enablePlugins(AkkaGrpcPlugin)
     .settings(commonSettings: _*)
-    .dependsOn(protos, knowledgeGraphActor, knowledgeGraphServiceProtos, firestoreAkkaPersistence)
+    .dependsOn(protos, knowledgeGraphActor, firestoreAkkaPersistence)
     .settings(
       libraryDependencies ++= Seq(
         Dependencies.logging,
@@ -133,7 +126,7 @@ lazy val knowledgeGraphServiceTest =
   project
     .enablePlugins(AkkaGrpcPlugin)
     .settings(commonSettings: _*)
-    .dependsOn(protos, knowledgeGraphActor, knowledgeGraphServiceProtos)
+    .dependsOn(protos, knowledgeGraphActor)
     .settings(
       libraryDependencies ++= Seq(
         Dependencies.logging,

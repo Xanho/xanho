@@ -7,7 +7,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity, EntityType
 import akka.util.Timeout
 import org.xanho.knowledgegraph.actor.KnowledgeGraphActor
 import org.xanho.knowledgegraph.actor.implicits.KnowledgeGraphImplicits
-import org.xanho.knowledgegraph.service.proto.GetAnalysisResponse
+import org.xanho.proto.service.knowledgegraph.GetAnalysisResponse
 import org.xanho.proto.knowledgegraphactor.{IngestText, IngestTextResponse, KnowledgeGraphCommand}
 import org.xanho.proto.{nlp, knowledgegraphactor => kgaProtos}
 
