@@ -40,3 +40,7 @@ jobs:
             --build-arg GITHUB_SHA="$GITHUB_SHA" \
             --build-arg GITHUB_REF="$GITHUB_REF" \
             .
+      - name: Publish
+        working-directory: ./xanho-backend/serviceKubernetes/target/docker/stage
+        run: |-
+          docker push "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA"
