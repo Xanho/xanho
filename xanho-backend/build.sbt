@@ -119,6 +119,9 @@ lazy val serviceKubernetes =
         Dependencies.akkaManagementClusterHttp,
         Dependencies.akkaManagementClusterBootstrap,
         Dependencies.akkaDiscoveryKubernetesApi,
+      ),
+      dependencyOverrides ++= Seq(
+        Dependencies.akkaHttpSprayJson,
       )
     )
     .settings(

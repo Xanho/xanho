@@ -11,9 +11,12 @@ object Dependencies {
 
   val akkaHttp: Seq[ModuleID] =
     Seq(
-      "com.typesafe.akka" %% s"akka-http" % AkkaHttpVersion,
-      "com.typesafe.akka" %% s"akka-http2-support" % AkkaHttpVersion
+      "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
+      "com.typesafe.akka" %% "akka-http2-support" % AkkaHttpVersion
     )
+
+  val akkaHttpSprayJson =
+    "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion
 
   val akkaManagementClusterHttp =
     "com.lightbend.akka.management" %% "akka-management-cluster-http" % "1.0.8"
