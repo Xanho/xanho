@@ -17,7 +17,7 @@ spec:
         actorSystemName: xanho-backend
     spec:
       serviceAccountName: xanho-backend-sa
-      automountServiceAccountToken: false
+      automountServiceAccountToken: true
       containers:
         - name: xanho-backend
           image: gcr.io/PROJECT_ID/IMAGE:TAG
