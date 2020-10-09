@@ -7,9 +7,6 @@ import "org/xanho/proto/nlp/nlp.proto";
 import "org/xanho/proto/akkaGrpcCompat.proto";
 
 option (scalapb.options) = {
-  scope: FILE
-  package_name: "org.xanho.proto.knowledgegraphactor"
-  flat_package: true
   single_file: true
   preamble: "sealed trait KnowledgeGraphCommand extends scalapb.GeneratedMessage"
   preamble: "sealed trait KnowledgeGraphEvent extends scalapb.GeneratedMessage"

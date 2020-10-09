@@ -42,6 +42,9 @@ lazy val protos =
         Dependencies.akkaModule("actor"),
         "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
       ),
+      PB.protoSources in Compile ++= Seq(
+        file("../protos")
+      ),
     )
 
 lazy val nlp =

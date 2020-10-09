@@ -1,6 +1,5 @@
 syntax = "proto3";
 
-
 package org.xanho.proto.service.knowledgegraph;
 
 import "org/xanho/proto/nlp/nlp.proto";
