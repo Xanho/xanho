@@ -14,48 +14,83 @@ class GraphPage extends StatefulWidget {
       (index) => _Message(_Lipsum.paragraphs[index], _MessageSide(index % 2)),
     );
 
-    return _GraphPageState(_messages);
+    return _GraphPageState(
+      messagesStream: Stream.fromIterable(_messages).asyncMap((event) {
+        final completer = Completer<_Message>();
+        Timer(Duration(milliseconds: 500), () {
+          completer.complete(event);
+        });
+        return completer.future;
+      }),
+    );
   }
 }
 
 class _GraphPageState extends State<GraphPage> {
-  _GraphPageState(this.messages);
+  _GraphPageState({this.messagesStream, this.sendMessage});
 
-  List<_Message> messages;
+  Stream<_Message> messagesStream;
+  Function(_Message) sendMessage;
 
   final _scrollController = ScrollController();
+
+  Stream<List<_Message>> get _statefulStream {
+    var items = new List<_Message>();
+    return messagesStream.map((item) {
+      items = List.of(items);
+      items.add(item);
+      return items;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    Timer(
-      Duration(milliseconds: 800),
-      () => _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: Duration(milliseconds: 500),
-        curve: Curves.fastOutSlowIn,
-      ),
+  }
+
+  _transitionToBottom() {
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: Duration(milliseconds: 500),
+      curve: Curves.fastOutSlowIn,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final streamBuilder = StreamBuilder<List<_Message>>(
+      stream: _statefulStream.map((items) {
+        Timer(
+          Duration(milliseconds: 200),
+          () {
+            _transitionToBottom();
+          },
+        );
+        return items;
+      }),
+      initialData: [],
+      builder: (context, snapshot) => _listView(snapshot.data ?? []),
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Xanho Graph"),
       ),
       body: Center(
         child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 1080),
-            child: ListView.builder(
-              itemCount: messages.length,
-              itemBuilder: (context, index) =>
-                  _ChatBubble.fromMessage(messages[index]),
-              controller: _scrollController,
-            )),
+          constraints: BoxConstraints(maxWidth: 1080),
+          child: streamBuilder,
+        ),
       ),
     );
   }
+
+  _listView(List<_Message> messages) => ListView.builder(
+        itemCount: messages.length,
+        itemBuilder: (context, index) =>
+            _ChatBubble.fromMessage(messages[index]),
+        controller: _scrollController,
+      );
 }
 
 class _ChatBubble extends StatelessWidget {
