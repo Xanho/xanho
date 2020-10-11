@@ -20,8 +20,14 @@ trait Service {
     val f =
       preStart()
         .flatMap(_ => startAppServer())
+        .flatMap(_ => startHealthcheckServer())
 
     Await.result(f, 30.seconds)
+  }
+
+  protected def startHealthcheckServer(): Future[Done] = {
+    val server = new HealthcheckServer()
+    server.start()
   }
 
   protected def startAppServer(): Future[Done] = {

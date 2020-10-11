@@ -8,5 +8,7 @@ spec:
   ports:
     - port: 80
       targetPort: 8080
+    - port: 8081
+      targetPort: 8081
   selector:
     app: xanho-backend
