@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: xanho-backend
+  namespace: xanho-backend
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: xanho-backend
+    networking.gke.io/managed-certificates: "backend.xanho.org"
+spec:
+  rules:
+  - host: backend.xanho.org
+    http:
+      paths:
+      - backend:
+          serviceName: xanho-backend
+          servicePort: 80
