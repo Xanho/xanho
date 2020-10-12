@@ -4,9 +4,9 @@ metadata:
   namespace: xanho-backend
   name: xanho-backend
   annotations:
-    service.alpha.kubernetes.io/app-protocols: '{"app":"HTTP2"}'
+    service.alpha.kubernetes.io/app-protocols: '{"app":"HTTP2", "healthcheck": "HTTP"}'
     cloud.google.com/neg: '{"ingress": true}'
-    cloud.google.com/backend-config: '{"ports": {"80":"xanho-backend-healthcheck", "8080":"xanho-backend-healthcheck", "8081":"xanho-backend-healthcheck"}}'
+    cloud.google.com/backend-config: '{"default": "xanho-backend-healthcheck"}'
 spec:
   type: NodePort
   ports:
