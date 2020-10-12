@@ -13,4 +13,4 @@ spec:
       paths:
       - backend:
           serviceName: xanho-backend
-          servicePort: 443
+          servicePort: 80
