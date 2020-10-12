@@ -5,6 +5,9 @@ metadata:
   name: xanho-backend
 spec:
   replicas: 2
+  selector:
+    matchLabels:
+      app: xanho-backend
   strategy:
     rollingUpdate:
       maxSurge: 1
