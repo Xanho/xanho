@@ -38,7 +38,7 @@ jobs:
       - name: Set up Kustomize
         working-directory: ./xanho-backend/deploy/kubernetes
         run: |-
-          curl -sfLo kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv3.8.5/kustomize_v3.8.5_linux_amd64.tar.gz
+          curl -sfLo kustomize_v3.8.5_linux_amd64.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv3.8.5/kustomize_v3.8.5_linux_amd64.tar.gz
           tar -xvf kustomize_v3.8.5_linux_amd64.tar.gz
           rm kustomize_v3.8.5_linux_amd64.tar.gz
           chmod u+x ./kustomize
