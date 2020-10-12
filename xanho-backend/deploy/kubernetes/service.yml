@@ -3,6 +3,9 @@ kind: Service
 metadata:
   namespace: xanho-backend
   name: xanho-backend
+  annotations:
+    service.alpha.kubernetes.io/app-protocols: '{"app":"HTTP2"}'
+    cloud.google.com/neg: '{"ingress": true}'
 spec:
   type: NodePort
   ports:
@@ -10,7 +13,7 @@ spec:
       port: 80
       targetPort: 8080
     - name: app
-      port: 8081
-      targetPort: 8081
+      port: 443
+      targetPort: 8443
   selector:
     app: xanho-backend

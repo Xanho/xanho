@@ -1,4 +1,4 @@
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: xanho-backend
@@ -29,7 +29,7 @@ spec:
               containerPort: 8558
               protocol: TCP
             - name: app
-              containerPort: 8081
+              containerPort: 8443
               protocol: TCP
             - name: healthcheck
               containerPort: 8080
