@@ -11,8 +11,7 @@ spec:
   - host: backend.xanho.org
     http:
       paths:
-      - path: /
-        pathType: Prefix
+      - path: /*
         backend:
           serviceName: xanho-backend
           servicePort: 80
