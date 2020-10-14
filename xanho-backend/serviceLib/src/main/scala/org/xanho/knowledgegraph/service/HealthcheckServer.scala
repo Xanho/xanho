@@ -2,7 +2,7 @@ package org.xanho.knowledgegraph.service
 
 import akka.Done
 import akka.actor.CoordinatedShutdown
-import akka.actor.typed.{ActorSystem, Extension}
+import akka.actor.typed.{ActorSystem, Extension, ExtensionId}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
@@ -11,7 +11,26 @@ import org.slf4j.{Logger, LoggerFactory}
 import scala.concurrent.{Future, Promise}
 import scala.util.{Failure, Success}
 
-class HealthcheckServer(implicit system: ActorSystem[_]) extends Extension {
+class HealthcheckServerExt(implicit system: ActorSystem[_]) extends Extension {
+
+  private val bindingHost =
+    system.settings.config.getString("healthcheck.binding.host")
+
+  private val bindingPort: Int =
+    system.settings.config.getInt("healthcheck.binding.port")
+
+  val server =
+    new HealthcheckServer(bindingHost, bindingPort)
+
+}
+
+object HealthcheckServerExt extends ExtensionId[HealthcheckServerExt] {
+  override def createExtension(system: ActorSystem[_]): HealthcheckServerExt =
+    new HealthcheckServerExt()(system)
+
+}
+
+class HealthcheckServer(bindingHost: String, bindingPort: Int)(implicit system: ActorSystem[_]) {
 
   import system.executionContext
 
@@ -29,12 +48,6 @@ class HealthcheckServer(implicit system: ActorSystem[_]) extends Extension {
         complete(StatusCodes.OK)
       }
     }
-
-  private val bindingHost =
-    system.settings.config.getString("healthcheck.binding.host")
-
-  private val bindingPort: Int =
-    system.settings.config.getInt("healthcheck.binding.port")
 
   def start(): Future[Done] = {
     log.info("Binding Healthcheck Service. host={} port={}", bindingHost, bindingPort)

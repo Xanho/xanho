@@ -5,7 +5,7 @@ metadata:
   namespace: xanho-backend
   annotations:
     kubernetes.io/ingress.global-static-ip-name: xanho-backend
-    networking.gke.io/managed-certificates: "backend.xanho.org"
+    networking.gke.io/managed-certificates: xanho-backend
 spec:
   rules:
   - host: backend.xanho.org

@@ -26,12 +26,16 @@ trait Service {
   }
 
   protected def startHealthcheckServer(): Future[Done] = {
-    val server = new HealthcheckServer()
+    val server = HealthcheckServerExt(system).server
     server.start()
   }
 
   protected def startAppServer(): Future[Done] = {
-    val server = new GrpcServer()
+//    val server = new GrpcServer()
+    val server = new HealthcheckServer(
+      system.settings.config.getString("service.binding.host"),
+      system.settings.config.getInt("service.binding.port")
+    )
 
     server.start()
   }
