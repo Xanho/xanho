@@ -1,4 +1,4 @@
-package org.xanho.backend
+package org.xanho.knowledgegraph.service
 
 import java.nio.file.{Files, Paths}
 import java.security.{KeyStore, SecureRandom}

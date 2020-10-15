@@ -37,10 +37,13 @@ class GrpcServer(implicit system: ActorSystem[_]) extends Extension {
   def start(): Future[Done] = {
     log.info("Binding gRPC Service. host={} port={}", bindingHost, bindingPort)
     started = true
+    val serverBuilder =
+      XanhoHttps(system).contextOpt
+        .foldLeft(
+          Http()(system.classicSystem).newServerAt(bindingHost, bindingPort)
+        )((server, https) => server.enableHttps(https))
     bindingPromise.completeWith(
-      Http()(system.classicSystem)
-        .newServerAt(bindingHost, bindingPort)
-        .bind(handler)
+      serverBuilder.bind(handler)
     )
       .future
       .andThen {
