@@ -31,7 +31,7 @@ class XanhoHttps(implicit system: ActorSystem[_]) extends Extension {
           Paths.get(keyPasswordLocation)
         ).toCharArray
 
-      val keystore = KeyStore.getInstance("pcks12")
+      val keystore = KeyStore.getInstance("JKS")
       keystore.store(
         Files.newOutputStream(Paths.get(keyLocation)),
         password
