@@ -27,9 +27,10 @@ class XanhoHttps(implicit system: ActorSystem[_]) extends Extension {
       keyLocation <- keyLocationOpt
     } yield {
       val password =
-        Files.readString(
+        Files.lines(
           Paths.get(keyPasswordLocation)
-        ).toCharArray
+        ).findFirst().get()
+          .toCharArray
 
       val keystore = KeyStore.getInstance("JKS")
       keystore.load(
