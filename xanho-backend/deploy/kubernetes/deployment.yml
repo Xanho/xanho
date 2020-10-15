@@ -56,6 +56,13 @@ spec:
               memory: 768Mi
             limits:
               memory: 768Mi
+          volumeMounts:
+            - name: certs
+              mountPath: /etc/ssl/xanho
+          volumes:
+            - name: certs
+              secret:
+                secretName: xanho-certs        
           env:
             - name: AKKA_CLUSTER_BOOTSTRAP_SERVICE_NAME
               valueFrom:

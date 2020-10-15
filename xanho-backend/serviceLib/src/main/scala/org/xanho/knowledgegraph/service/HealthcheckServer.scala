@@ -52,10 +52,13 @@ class HealthcheckServer(bindingHost: String, bindingPort: Int)(implicit system: 
   def start(): Future[Done] = {
     log.info("Binding Healthcheck Service. host={} port={}", bindingHost, bindingPort)
     started = true
+    val serverBuilder =
+      XanhoHttps(system).contextOpt
+        .foldLeft(
+          Http()(system.classicSystem).newServerAt(bindingHost, bindingPort)
+        )((server, https) => server.enableHttps(https))
     bindingPromise.completeWith(
-      Http()(system.classicSystem)
-        .newServerAt(bindingHost, bindingPort)
-        .bind(route)
+      serverBuilder.bind(route)
     )
       .future
       .andThen {
