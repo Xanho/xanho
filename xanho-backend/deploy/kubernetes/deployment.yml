@@ -36,7 +36,7 @@ spec:
               containerPort: 8558
               protocol: TCP
             - name: app
-              containerPort: 8080
+              containerPort: 8443
               protocol: TCP
             - name: healthcheck
               containerPort: 8081
