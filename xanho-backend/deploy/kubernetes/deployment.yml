@@ -21,6 +21,10 @@ spec:
     spec:
       serviceAccountName: xanho-backend-sa
       automountServiceAccountToken: true
+      volumes:
+        - name: certs
+          secret:
+            secretName: xanho-certs
       containers:
         - name: xanho-backend
           image: gcr.io/PROJECT_ID/IMAGE:TAG
@@ -59,10 +63,6 @@ spec:
           volumeMounts:
             - name: certs
               mountPath: /etc/ssl/xanho
-          volumes:
-            - name: certs
-              secret:
-                secretName: xanho-certs        
           env:
             - name: AKKA_CLUSTER_BOOTSTRAP_SERVICE_NAME
               valueFrom:
