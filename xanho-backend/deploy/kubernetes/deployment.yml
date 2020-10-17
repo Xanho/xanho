@@ -25,33 +25,9 @@ spec:
         - name: certs
           secret:
             secretName: xanho-backend-internal
-        - name: nginx-conf
-          configMap:
-            name: nginx-conf
-      containers:
-        - name: nginx
-          image: nginx
-          imagePullPolicy: IfNotPresent
-          ports:
-            - name: app-proxy
-              containerPort: 8443
-              protocol: TCP
-            - name: health-proxy
-              containerPort: 8444
-              protocol: TCP
-          resources:
-            limits:
-              cpu: 300m
-              memory: 512Mi
-            requests:
-              cpu: 200m
-              memory: 256Mi
-          volumeMounts:
-            - mountPath: /etc/nginx/nginx.conf
-              name: nginx-conf
-              subPath: nginx.conf
-            - name: certs
-              mountPath: /etc/ssl/xanho
+        - name: credentials
+          secret:
+            secretName: xanho-credentials
         - name: xanho-backend
           image: gcr.io/PROJECT_ID/IMAGE:TAG
           ports:
@@ -62,10 +38,10 @@ spec:
               containerPort: 8558
               protocol: TCP
             - name: app
-              containerPort: 8080
+              containerPort: 8443
               protocol: TCP
             - name: healthcheck
-              containerPort: 8081
+              containerPort: 8444
               protocol: TCP
           readinessProbe:
             httpGet:
@@ -86,6 +62,11 @@ spec:
               memory: 768Mi
             limits:
               memory: 768Mi
+          volumeMounts:
+            - name: certs
+              mountPath: /etc/ssl/xanho
+            - name: credentials
+              mountPath: /etc/ssl/xanho-credentials
           env:
             - name: AKKA_CLUSTER_BOOTSTRAP_SERVICE_NAME
               valueFrom:
@@ -100,3 +81,7 @@ spec:
               value: "2"
             - name: GOOGLE_PROJECT_ID
               value: "xanho-151422"
+            - name: SSL_KEY_PATH
+              value: "/etc/ssl/xanho/keystore.p12"
+            - name: SSL_PASSWORD_PATH
+              value: "/etc/ssl/xanho-credentials/password"
