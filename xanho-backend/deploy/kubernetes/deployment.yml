@@ -24,8 +24,29 @@ spec:
       volumes:
         - name: certs
           secret:
-            secretName: xanho-certs
+            secretName: xanho-backend-internal
+        - name: nginx-conf
+          configMap:
+            name: nginx
       containers:
+        - name: nginx
+          image: nginx
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8443
+          resources:
+            limits:
+              cpu: 300m
+              memory: 512Mi
+            requests:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - mountPath: /etc/nginx/nginx.conf
+              name: nginx-conf
+              subPath: nginx.conf
+            - name: certs
+              mountPath: /etc/ssl/xanho
         - name: xanho-backend
           image: gcr.io/PROJECT_ID/IMAGE:TAG
           ports:
@@ -36,7 +57,7 @@ spec:
               containerPort: 8558
               protocol: TCP
             - name: app
-              containerPort: 8443
+              containerPort: 8080
               protocol: TCP
             - name: healthcheck
               containerPort: 8081
@@ -60,9 +81,6 @@ spec:
               memory: 768Mi
             limits:
               memory: 768Mi
-          volumeMounts:
-            - name: certs
-              mountPath: /etc/ssl/xanho
           env:
             - name: AKKA_CLUSTER_BOOTSTRAP_SERVICE_NAME
               valueFrom:
