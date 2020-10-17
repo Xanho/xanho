@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../logic/graph_service.dart';
+import 'package:provider/provider.dart';
+
 class GraphPage extends StatefulWidget {
   const GraphPage(this._graphId);
 
@@ -9,30 +12,82 @@ class GraphPage extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    final _messages = List.generate(
-      10,
-      (index) => _Message(_Lipsum.paragraphs[index], _MessageSide(index % 2)),
-    );
-
-    return _GraphPageState(
-      messagesStream: Stream.fromIterable(_messages).asyncMap((event) {
-        final completer = Completer<_Message>();
-        Timer(Duration(milliseconds: 500), () {
-          completer.complete(event);
-        });
-        return completer.future;
-      }),
-    );
+    return _GraphPageState(this._graphId);
   }
 }
 
 class _GraphPageState extends State<GraphPage> {
-  _GraphPageState({this.messagesStream, this.sendMessage});
+  _GraphPageState(this._graphId);
+
+  final String _graphId;
+
+  @override
+  Widget build(BuildContext context) {
+    return Provider<GraphService>(
+      create: (_) => GraphService(),
+      builder: (context, _) => _GraphPageWithService(
+        context.watch<GraphService>(),
+        _graphId,
+      ),
+    );
+  }
+}
+
+class _GraphPageWithService extends StatefulWidget {
+  _GraphPageWithService(this._graphService, this._graphId);
+
+  final GraphService _graphService;
+  final String _graphId;
+
+  @override
+  State<StatefulWidget> createState() {
+    return _GraphPageWithServiceState(this._graphService, this._graphId);
+  }
+}
+
+class _GraphPageWithServiceState extends State<_GraphPageWithService> {
+  _GraphPageWithServiceState(this._graphService, this._graphId);
+
+  final GraphService _graphService;
+  final String _graphId;
+
+  StreamController<_Message> _streamController;
+  Function(_Message) _sendMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _streamController = StreamController<_Message>();
+    _sendMessage = (message) {
+      _graphService.sendMessage(_graphId, message.text);
+      _streamController.add(message);
+      _graphService
+          .receiveMessage(_graphId)
+          .then((m) => _Message(m, _MessageSide.left))
+          .then((m) => _streamController.add(m));
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _GraphPageImpl(
+      messagesStream: _streamController.stream,
+      sendMessage: this._sendMessage,
+    );
+  }
+}
+
+class _GraphPageImpl extends StatelessWidget {
+  _GraphPageImpl({this.messagesStream, this.sendMessage});
 
   Stream<_Message> messagesStream;
   Function(_Message) sendMessage;
 
   final _scrollController = ScrollController();
+
+  final _formKey = GlobalKey<FormState>();
+
+  final _textFieldController = TextEditingController();
 
   Stream<List<_Message>> get _statefulStream {
     var items = new List<_Message>();
@@ -41,11 +96,6 @@ class _GraphPageState extends State<GraphPage> {
       items.add(item);
       return items;
     });
-  }
-
-  @override
-  void initState() {
-    super.initState();
   }
 
   _transitionToBottom() {
@@ -72,6 +122,30 @@ class _GraphPageState extends State<GraphPage> {
       builder: (context, snapshot) => _listView(snapshot.data ?? []),
     );
 
+    final form = Form(
+        key: _formKey,
+        child: Column(children: <Widget>[
+          TextFormField(
+            validator: (value) {
+              if (value.isEmpty) {
+                return "Please enter a Graph ID.";
+              }
+              return null;
+            },
+            controller: _textFieldController,
+          ),
+          IconButton(
+            onPressed: () {
+              if (_formKey.currentState.validate()) {
+                sendMessage(
+                    _Message(_textFieldController.text, _MessageSide.right));
+                _textFieldController.clear();
+              }
+            },
+            icon: Icon(Icons.navigate_next_rounded),
+          )
+        ]));
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Xanho Graph"),
@@ -79,7 +153,15 @@ class _GraphPageState extends State<GraphPage> {
       body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 1080),
-          child: streamBuilder,
+          child: Column(
+            children: [
+              Flexible(
+                fit: FlexFit.loose,
+                child: streamBuilder,
+              ),
+              form,
+            ],
+          ),
         ),
       ),
     );

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
-import './pages/home_page.dart';
+import 'package:frontend/src/pages/home_page.dart';
+import 'package:provider/provider.dart';
+
+import 'src/logic/graph_service.dart';
 
 void main() {
   runApp(App());
@@ -16,7 +19,11 @@ class App extends StatelessWidget {
         primarySwatch: Colors.green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: HomePage(title: 'Xanho'),
+      home: Provider<GraphService>(
+        create: (_) => GraphService(),
+        child: HomePage(title: 'Xanho'),
+        lazy: false,
+      ),
     );
   }
 }

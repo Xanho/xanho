@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package org.xanho.proto.service.knowledgegraph;
+
+import "org/xanho/proto/nlp/nlp.proto";
+
+service KnowledgeGraphService {
+
+  rpc IngestTextStream(stream IngestTextRequest) returns (IngestTextStreamResponse);
+
+  rpc GetAnalysis(GetAnalysisRequest) returns (GetAnalysisResponse);
+
+  rpc GenerateResponse(GenerateResponseRequest) returns (GenerateResponseResponse);
+
+}
+
+message IngestTextRequest {
+  string graphId = 1;
+  string text = 2;
+}
+
+message IngestTextStreamResponse {
+  int32 processedCount = 1;
+}
+
+message GetAnalysisRequest {
+  string graphId = 1;
+}
+
+message GetAnalysisResponse {
+  string graphId = 1;
+
+  repeated org.xanho.proto.nlp.Token.Word vocabulary = 101;
+  repeated WordFrequency wordFrequencies = 102;
+
+  message WordFrequency {
+    org.xanho.proto.nlp.Token.Word word = 1;
+    double percent = 2;
+  }
+
+}
+
+message GenerateResponseRequest {
+  string graphId = 1;
+}
+
+message  GenerateResponseResponse {
+  string graphId = 1;
+
+  org.xanho.proto.nlp.Document document = 2;
+}

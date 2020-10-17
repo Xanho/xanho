@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../pages/graph_page.dart';
+import './graph_page.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.title}) : super(key: key);
