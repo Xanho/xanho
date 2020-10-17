@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package org.xanho.proto.nlp;
+
+message Text {
+  string text = 1;
+}
+
+message Token {
+  oneof value {
+    Space space = 1;
+    LineBreak lineBreak = 2;
+    Punctuation punctuation = 3;
+    Word word = 4;
+  }
+
+  message Space {}
+  message LineBreak {}
+
+  message Punctuation {
+    string value = 1;
+  }
+
+  message Word {
+    string value = 1;
+  }
+}
+
+message Phrase {
+  repeated Token.Word words = 1;
+}
+
+message Sentence {
+  Phrase phrase = 1;
+  Token.Punctuation punctuation = 2;
+  SentenceType sentenceType = 3;
+
+  enum SentenceType {
+    STATEMENT = 0;
+    QUESTION = 1;
+  }
+}
+
+message Paragraph {
+  repeated Sentence sentences = 1;
+}
+
+message Document {
+  repeated Paragraph paragraphs = 1;
+}
+
+message ParseResult {
+  Text text = 1;
+  Document document = 2;
+}
+
+
