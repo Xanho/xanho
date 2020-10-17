@@ -36,7 +36,7 @@ spec:
             - name: app-proxy
               containerPort: 8443
               protocol: TCP
-            - name: healthcheck-proxy
+            - name: health-proxy
               containerPort: 8444
               protocol: TCP
           resources:
