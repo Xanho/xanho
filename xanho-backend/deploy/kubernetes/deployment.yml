@@ -33,10 +33,10 @@ spec:
           image: nginx
           imagePullPolicy: IfNotPresent
           ports:
-            - name: appProxy
+            - name: app-proxy
               containerPort: 8443
               protocol: TCP
-            - name: healthcheckProxy
+            - name: healthcheck-proxy
               containerPort: 8444
               protocol: TCP
           resources:
