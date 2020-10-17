@@ -8,10 +8,6 @@ metadata:
     networking.gke.io/managed-certificates: xanho-backend
     kubernetes.io/ingress.allow-http: "false"
 spec:
-  rules:
-  - http:
-      paths:
-      - path: /*
-        backend:
-          serviceName: xanho-backend
-          servicePort: 443
+  backend:
+    serviceName: xanho-backend
+    servicePort: 443

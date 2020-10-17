@@ -4,7 +4,7 @@ metadata:
   namespace: xanho-backend
   name: xanho-backend
   annotations:
-    cloud.google.com/app-protocols: '{"app":"HTTP2", "healthcheck": "HTTP2"}'
+    cloud.google.com/app-protocols: '{"app":"HTTP2"}'
     cloud.google.com/neg: '{"ingress": true}'
     cloud.google.com/backend-config: '{"default": "xanho-backend-healthcheck"}'
 spec:
@@ -27,5 +27,5 @@ metadata:
 spec:
   healthCheck:
     checkIntervalSec: 15
-    port: 444
+    port: 8444
     type: HTTP2
