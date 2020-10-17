@@ -8,10 +8,8 @@ metadata:
     networking.gke.io/managed-certificates: xanho-backend
 spec:
   rules:
-  - host: backend.xanho.org
-    http:
+  - http:
       paths:
-      - path: /*
-        backend:
+      - backend:
           serviceName: xanho-backend
           servicePort: 443
