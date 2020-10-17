@@ -28,6 +28,7 @@ spec:
         - name: credentials
           secret:
             secretName: xanho-credentials
+      containers:
         - name: xanho-backend
           image: gcr.io/PROJECT_ID/IMAGE:TAG
           ports:
