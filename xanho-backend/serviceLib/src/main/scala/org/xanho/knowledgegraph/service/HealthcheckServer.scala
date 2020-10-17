@@ -43,10 +43,8 @@ class HealthcheckServer(bindingHost: String, bindingPort: Int)(implicit system: 
     Promise()
 
   private val route =
-    pathSingleSlash {
-      get {
-        complete(StatusCodes.OK)
-      }
+    get {
+      complete(StatusCodes.OK)
     }
 
   def start(): Future[Done] = {
