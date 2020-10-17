@@ -27,7 +27,7 @@ spec:
             secretName: xanho-backend-internal
         - name: nginx-conf
           configMap:
-            name: nginx
+            name: nginx-conf
       containers:
         - name: nginx
           image: nginx
