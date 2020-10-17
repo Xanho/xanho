@@ -21,7 +21,7 @@ class XanhoHttps(implicit system: ActorSystem[_]) extends Extension {
       .filter(config.hasPath)
       .map(config.getString)
 
-  val contextOpt: Option[HttpsConnectionContext] =
+  val sslContext: Option[SSLContext] =
     for {
       keyPasswordLocation <- keyPasswordLocationOpt
       keyLocation <- keyLocationOpt
@@ -54,8 +54,11 @@ class XanhoHttps(implicit system: ActorSystem[_]) extends Extension {
         new SecureRandom()
       )
 
-      ConnectionContext.httpsServer(sslContext)
+      sslContext
     }
+
+  val contextOpt: Option[HttpsConnectionContext] =
+    sslContext.map(ConnectionContext.httpsServer)
 
 }
 
