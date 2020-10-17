@@ -10,6 +10,13 @@
             "request": "launch",
             "type": "dart",
             "args": ["-d", "chrome"]
+        },
+        {
+            "name": "frontend-linux",
+            "cwd": "frontend",
+            "request": "launch",
+            "type": "dart",
+            "args": ["-d", "linux"]
         }
     ]
 }
