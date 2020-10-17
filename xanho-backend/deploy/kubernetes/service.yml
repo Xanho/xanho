@@ -2,11 +2,30 @@ apiVersion: v1
 kind: Service
 metadata:
   namespace: xanho-backend
-  name: xanho-backend-service
+  name: xanho-backend
+  annotations:
+    cloud.google.com/app-protocols: '{"app":"HTTP2"}'
+    cloud.google.com/neg: '{"ingress": true}'
+    cloud.google.com/backend-config: '{"default": "xanho-backend-healthcheck"}'
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
-    - port: 80
-      targetPort: 8080
+    - name: healthcheck
+      port: 444
+      targetPort: 8444
+    - name: app
+      port: 443
+      targetPort: 8443
   selector:
     app: xanho-backend
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: xanho-backend-healthcheck
+  namespace: xanho-backend
+spec:
+  healthCheck:
+    checkIntervalSec: 15
+    port: 8444
+    type: HTTP2

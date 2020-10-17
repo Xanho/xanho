@@ -26,8 +26,11 @@ object LocalServiceTest extends App {
   private val port =
     system.settings.config.getInt("service.port")
 
+  private val tlsEnabled =
+    system.settings.config.getBoolean("service.tls-enabled")
+
   val client =
-    KnowledgeGraphServiceClient(GrpcClientSettings.connectToServiceAt(host, port).withTls(false))
+    KnowledgeGraphServiceClient(GrpcClientSettings.connectToServiceAt(host, port).withTls(tlsEnabled))
 
   val graphId =
     "graph2"

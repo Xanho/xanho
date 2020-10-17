@@ -1,10 +1,13 @@
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: xanho-backend
   name: xanho-backend
 spec:
   replicas: 2
+  selector:
+    matchLabels:
+      app: xanho-backend
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -18,6 +21,13 @@ spec:
     spec:
       serviceAccountName: xanho-backend-sa
       automountServiceAccountToken: true
+      volumes:
+        - name: certs
+          secret:
+            secretName: xanho-backend-internal
+        - name: credentials
+          secret:
+            secretName: xanho-credentials
       containers:
         - name: xanho-backend
           image: gcr.io/PROJECT_ID/IMAGE:TAG
@@ -29,7 +39,10 @@ spec:
               containerPort: 8558
               protocol: TCP
             - name: app
-              containerPort: 8080
+              containerPort: 8443
+              protocol: TCP
+            - name: healthcheck
+              containerPort: 8444
               protocol: TCP
           readinessProbe:
             httpGet:
@@ -50,6 +63,11 @@ spec:
               memory: 768Mi
             limits:
               memory: 768Mi
+          volumeMounts:
+            - name: certs
+              mountPath: /etc/ssl/xanho
+            - name: credentials
+              mountPath: /etc/ssl/xanho-credentials
           env:
             - name: AKKA_CLUSTER_BOOTSTRAP_SERVICE_NAME
               valueFrom:
@@ -64,3 +82,7 @@ spec:
               value: "2"
             - name: GOOGLE_PROJECT_ID
               value: "xanho-151422"
+            - name: SSL_KEY_PATH
+              value: "/etc/ssl/xanho/keystore.p12"
+            - name: SSL_PASSWORD_PATH
+              value: "/etc/ssl/xanho-credentials/password"

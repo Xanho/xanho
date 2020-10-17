@@ -1,6 +1,12 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+namespace: xanho-backend
 resources:
+  - internal-cert.yml
   - deployment.yml
   - service.yml
-  
+  - ingress.yml
+configMapGenerator:
+    - name: nginx-conf
+      files:
+        - configs/nginx.conf
