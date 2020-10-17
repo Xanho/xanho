@@ -4,11 +4,11 @@ metadata:
   namespace: xanho-backend
   name: xanho-backend
   annotations:
-    service.alpha.kubernetes.io/app-protocols: '{"app":"HTTP2", "healthcheck": "HTTP2"}'
+    cloud.google.com/app-protocols: '{"app":"HTTP2", "healthcheck": "HTTP2"}'
     cloud.google.com/neg: '{"ingress": true}'
     cloud.google.com/backend-config: '{"default": "xanho-backend-healthcheck"}'
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
     - name: healthcheck
       port: 444

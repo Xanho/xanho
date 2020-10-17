@@ -6,10 +6,12 @@ metadata:
   annotations:
     kubernetes.io/ingress.global-static-ip-name: xanho-backend
     networking.gke.io/managed-certificates: xanho-backend
+    kubernetes.io/ingress.allow-http: "false"
 spec:
   rules:
   - http:
       paths:
-      - backend:
+      - path: /*
+        backend:
           serviceName: xanho-backend
           servicePort: 443
