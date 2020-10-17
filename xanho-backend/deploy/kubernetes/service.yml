@@ -11,7 +11,7 @@ spec:
   type: NodePort
   ports:
     - name: healthcheck
-      port: 8081
+      port: 444
       targetPort: 8444
     - name: app
       port: 443
@@ -27,5 +27,5 @@ metadata:
 spec:
   healthCheck:
     checkIntervalSec: 15
-    port: 8081
+    port: 444
     type: HTTP2
