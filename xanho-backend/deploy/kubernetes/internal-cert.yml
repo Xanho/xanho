@@ -24,3 +24,9 @@ spec:
   issuerRef:
     name: xanho-selfsigned-issuer
     kind: Issuer
+  keystores:
+    pkcs12:
+      create: true
+      passwordSecretRef:
+        name: xanho-credentials
+        key: password
