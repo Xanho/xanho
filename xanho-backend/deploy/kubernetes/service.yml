@@ -4,7 +4,7 @@ metadata:
   namespace: xanho-backend
   name: xanho-backend
   annotations:
-    service.alpha.kubernetes.io/app-protocols: '{"app":"HTTP2", "healthcheck": "HTTP2"}'
+    service.alpha.kubernetes.io/app-protocols: '{"app":"HTTP2", "healthcheck": "HTTP"}'
     cloud.google.com/neg: '{"ingress": true}'
     cloud.google.com/backend-config: '{"default": "xanho-backend-healthcheck"}'
 spec:
@@ -23,8 +23,9 @@ apiVersion: cloud.google.com/v1
 kind: BackendConfig
 metadata:
   name: xanho-backend-healthcheck
+  namespace: xanho-backend
 spec:
   healthCheck:
     checkIntervalSec: 15
     port: 8081
-    type: HTTP2
+    type: HTTP
