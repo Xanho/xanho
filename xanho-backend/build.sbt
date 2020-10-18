@@ -90,6 +90,7 @@ lazy val serviceLib =
         Dependencies.akkaModule("cluster-sharding-typed"),
         Dependencies.akkaModule("testkit"),
         Dependencies.akkaModule("stream-testkit"),
+        "ch.megard" %% "akka-http-cors" % "0.4.2"
       ),
       libraryDependencies ++= Dependencies.akkaHttp
     )
