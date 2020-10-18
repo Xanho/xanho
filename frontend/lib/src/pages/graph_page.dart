@@ -58,13 +58,13 @@ class _GraphPageWithServiceState extends State<_GraphPageWithService> {
   void initState() {
     super.initState();
     _streamController = StreamController<_Message>();
-    _sendMessage = (message) {
-      _graphService.sendMessage(_graphId, message.text);
+    _sendMessage = (message) async {
+      await _graphService.sendMessage(_graphId, message.text);
       _streamController.add(message);
-      _graphService
+      final nextMessage = await _graphService
           .receiveMessage(_graphId)
-          .then((m) => _Message(m, _MessageSide.left))
-          .then((m) => _streamController.add(m));
+          .then((m) => _Message(m, _MessageSide.left));
+      _streamController.add(nextMessage);
     };
   }
 

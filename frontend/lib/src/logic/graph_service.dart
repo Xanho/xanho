@@ -8,7 +8,7 @@ import 'package:frontend/src/proto/org/xanho/proto/nlp/nlp.pb.dart';
 class GraphService {
   GraphService() {
     this._channel =
-        GrpcWebClientChannel.xhr(Uri.parse("https://backend.xanho.org:447"));
+        GrpcWebClientChannel.xhr(Uri.parse("https://backend.xanho.org:443"));
     // this._channel = ClientChannel(
     //   'backend.xanho.org',
     //   port: 443,
