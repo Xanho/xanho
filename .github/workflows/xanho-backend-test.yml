@@ -3,6 +3,8 @@ name: xanho-backend Tests
 on:
   push:
     branches: [master]
+    paths:
+    - 'xanho-backend/**'
   pull_request:
     branches: [master]
 
