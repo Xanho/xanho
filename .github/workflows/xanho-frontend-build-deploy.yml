@@ -1,0 +1,48 @@
+name: xanho-frontend Build and Deploy
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+  build:
+    name: Setup, Build, Upload
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Flutter
+        uses: subosito/flutter-action@v1
+        with:
+          channel: beta
+      - run: flutter config --enable-web
+      - run: flutter pub get
+        working-directory: ./frontend
+      - run: flutter test
+        working-directory: ./frontend
+      - run: flutter build web
+        working-directory: ./frontend
+      - name: Upload Web Dist
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: frontend/build/web/
+          if-no-files-found: error
+  deploy:
+    name: Download, Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@master
+      - name: Download Artifact
+        uses: actions/download-artifact@master
+        with:
+          name: dist
+          path: dist
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only hosting
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          PROJECT_ID: ${{ secrets.GKE_PROJECT }}
