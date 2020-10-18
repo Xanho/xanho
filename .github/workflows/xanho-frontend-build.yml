@@ -14,7 +14,7 @@ jobs:
       - name: Install Flutter
         uses: subosito/flutter-action@v1
         with:
-          channel: beta
+          channel: dev
       - run: flutter config --enable-web
       - run: flutter pub get
         working-directory: ./frontend
