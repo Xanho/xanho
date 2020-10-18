@@ -25,6 +25,6 @@ jobs:
       - name: Upload Web Dist
         uses: actions/upload-artifact@v2
         with:
-          name: $GITHUB_SHA
+          name: ${{github.sha}}
           path: frontend/build/web/
           if-no-files-found: error
