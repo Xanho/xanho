@@ -26,5 +26,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: web-dist
-          path: frontend/dist/web/
+          path: frontend/build/web/
           if-no-files-found: error
