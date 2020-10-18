@@ -41,6 +41,9 @@ spec:
             - name: app
               containerPort: 8443
               protocol: TCP
+            - name: app-grpc-web
+              containerPort: 8447
+              protocol: TCP
             - name: healthcheck
               containerPort: 8444
               protocol: TCP
