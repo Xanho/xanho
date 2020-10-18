@@ -1,4 +1,4 @@
-name: xanho-frontend Build
+name: xanho-frontend Deploy
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Setup, Build, Upload
+    name: Download, Deploy
     runs-on: ubuntu-latest
 
     steps:
