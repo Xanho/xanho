@@ -10,12 +10,5 @@ metadata:
 spec:
   backend:
     serviceName: xanho-backend
-    servicePort: 443
-  rules:
-    - http:
-        paths:
-          - path: /grpc-web/*
-            backend:
-              serviceName: xanho-backend
-              servicePort: 447
+    servicePort: 447
 
