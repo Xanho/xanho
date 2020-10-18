@@ -3,7 +3,6 @@ name: xanho-frontend Build and Deploy
 on:
   workflow_dispatch:
 
-
 jobs:
   build:
     name: Setup, Build, Upload
@@ -30,6 +29,7 @@ jobs:
           if-no-files-found: error
   deploy:
     name: Download, Deploy
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
