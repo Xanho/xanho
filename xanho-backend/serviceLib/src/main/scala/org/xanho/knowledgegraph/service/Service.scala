@@ -33,7 +33,12 @@ trait Service {
   protected def startAppServer(): Future[Done] = {
     val server = new GrpcServer()
 
-    server.start()
+    val grpcWebServer = new GrpcWebServer()
+
+    for {
+      _ <- server.start()
+      _ <- grpcWebServer.start()
+    } yield Done
   }
 
 }
