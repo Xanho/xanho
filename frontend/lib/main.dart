@@ -22,7 +22,6 @@ class App extends StatelessWidget {
       home: Provider<GraphService>(
         create: (_) => GraphService(),
         child: HomePage(title: 'Xanho'),
-        lazy: false,
       ),
     );
   }

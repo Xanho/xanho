@@ -1,23 +1,12 @@
-import 'package:grpc/grpc_connection_interface.dart';
-// import 'package:grpc/grpc.dart';
-import 'package:grpc/grpc_web.dart';
-
 import 'package:frontend/src/proto/org/xanho/proto/service/knowledgeGraph.pbgrpc.dart';
 import 'package:frontend/src/proto/org/xanho/proto/nlp/nlp.pb.dart';
 
+import 'grpc_channel.dart' if (dart.library.html) 'grpc_web_channel.dart';
+
 class GraphService {
   GraphService() {
-    this._channel =
-        GrpcWebClientChannel.xhr(Uri.parse("https://backend.xanho.org:443"));
-    // this._channel = ClientChannel(
-    //   'backend.xanho.org',
-    //   port: 443,
-    // );
-
-    this._stub = KnowledgeGraphServiceClient(this._channel);
+    this._stub = KnowledgeGraphServiceClient(channel);
   }
-
-  ClientChannelBase _channel;
 
   KnowledgeGraphServiceClient _stub;
 
