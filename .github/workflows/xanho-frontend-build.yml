@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    name: Setup, Build
+    name: Setup, Build, Upload
     runs-on: ubuntu-latest
 
     steps:
@@ -22,3 +22,9 @@ jobs:
         working-directory: ./frontend
       - run: flutter build web
         working-directory: ./frontend
+      - name: Upload Web Dist
+        uses: actions/upload-artifact@v2
+        with:
+          name: web-dist
+          path: frontend/dist/web/
+          if-no-files-found: error
