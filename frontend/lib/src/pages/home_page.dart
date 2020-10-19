@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 import './graph_page.dart';
 
@@ -22,7 +23,7 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                'Enter a Graph ID to get started.',
+                'Get started.',
               ),
               GraphIdForm(),
             ],
@@ -39,38 +40,18 @@ class GraphIdForm extends StatefulWidget {
 }
 
 class _GraphIdFormState extends State<GraphIdForm> {
-  final _formKey = GlobalKey<FormState>();
-
-  final _graphIdFieldController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
-    return Form(
-        key: _formKey,
-        child: Column(children: <Widget>[
-          TextFormField(
-            validator: (value) {
-              if (value.isEmpty) {
-                return "Please enter a Graph ID.";
-              }
-              return null;
-            },
-            controller: _graphIdFieldController,
+    return IconButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GraphPage(Uuid().v4()),
           ),
-          IconButton(
-            onPressed: () {
-              if (_formKey.currentState.validate()) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        GraphPage(_graphIdFieldController.text),
-                  ),
-                );
-              }
-            },
-            icon: Icon(Icons.navigate_next_rounded),
-          )
-        ]));
+        );
+      },
+      icon: Icon(Icons.navigate_next_rounded),
+    );
   }
 }

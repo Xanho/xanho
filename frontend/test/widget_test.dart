@@ -1,11 +1,21 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:frontend/main.dart';
+import '../lib/src/widgets/chat.dart';
 
 void main() {
-  testWidgets('Ask for a graph ID', (WidgetTester tester) async {
-    await tester.pumpWidget(App());
+  testWidgets('ChatBubble Widget', (WidgetTester tester) async {
+    var widget = ChatBubble.fromMessage(
+      ChatBubbleMessage(
+        "Hello world.",
+        ChatBubbleMessageSide.right,
+      ),
+    );
 
-    expect(find.text("Enter a Graph ID to get started."), findsOneWidget);
+    var app = MaterialApp(home: widget);
+
+    await tester.pumpWidget(app);
+
+    expect(find.text("Hello world."), findsOneWidget);
   });
 }

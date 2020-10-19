@@ -43,19 +43,19 @@ class GraphPageWithService extends StatefulWidget {
 }
 
 class _GraphPageWithServiceState extends State<GraphPageWithService> {
-  StreamController<Message> _streamController;
-  Function(Message) _sendMessage;
+  StreamController<ChatBubbleMessage> _streamController;
+  Function(ChatBubbleMessage) _sendMessage;
 
   @override
   void initState() {
     super.initState();
-    _streamController = StreamController<Message>();
+    _streamController = StreamController<ChatBubbleMessage>();
     _sendMessage = (message) async {
       await widget._graphService.sendMessage(widget._graphId, message.text);
       _streamController.add(message);
       final nextMessage = await widget._graphService
           .receiveMessage(widget._graphId)
-          .then((m) => Message(m, MessageSide.left));
+          .then((m) => ChatBubbleMessage(m, ChatBubbleMessageSide.left));
       _streamController.add(nextMessage);
     };
   }
@@ -72,8 +72,8 @@ class _GraphPageWithServiceState extends State<GraphPageWithService> {
 class GraphPageImpl extends StatefulWidget {
   GraphPageImpl({this.messagesStream, this.sendMessage});
 
-  final Stream<Message> messagesStream;
-  final Function(Message) sendMessage;
+  final Stream<ChatBubbleMessage> messagesStream;
+  final Function(ChatBubbleMessage) sendMessage;
 
   @override
   _GraphPageImplState createState() => _GraphPageImplState();
@@ -86,8 +86,8 @@ class _GraphPageImplState extends State<GraphPageImpl> {
 
   final _textFieldController = TextEditingController();
 
-  Stream<List<Message>> get _statefulStream {
-    var items = new List<Message>();
+  Stream<List<ChatBubbleMessage>> get _statefulStream {
+    var items = new List<ChatBubbleMessage>();
     return widget.messagesStream.map((item) {
       items = List.of(items);
       items.add(item);
@@ -114,7 +114,7 @@ class _GraphPageImplState extends State<GraphPageImpl> {
   }
 
   Widget _streamBuilder(BuildContext context) {
-    final onItems = (List<Message> items) {
+    final onItems = (List<ChatBubbleMessage> items) {
       Timer(
         Duration(milliseconds: 200),
         () {
@@ -124,7 +124,7 @@ class _GraphPageImplState extends State<GraphPageImpl> {
       return items;
     };
 
-    return StreamBuilder<List<Message>>(
+    return StreamBuilder<List<ChatBubbleMessage>>(
       stream: _statefulStream.map(onItems),
       initialData: [],
       builder: (context, snapshot) => _listView(snapshot.data ?? []),
@@ -156,7 +156,8 @@ class _GraphPageImplState extends State<GraphPageImpl> {
   }
 
   _onValidInput() {
-    widget.sendMessage(Message(_textFieldController.text, MessageSide.right));
+    widget.sendMessage(ChatBubbleMessage(
+        _textFieldController.text, ChatBubbleMessageSide.right));
     _textFieldController.clear();
   }
 
@@ -174,7 +175,7 @@ class _GraphPageImplState extends State<GraphPageImpl> {
     );
   }
 
-  _listView(List<Message> messages) => ListView.builder(
+  _listView(List<ChatBubbleMessage> messages) => ListView.builder(
         itemCount: messages.length,
         itemBuilder: (context, index) =>
             ChatBubble.fromMessage(messages[index]),

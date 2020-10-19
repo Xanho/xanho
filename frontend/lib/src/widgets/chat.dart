@@ -17,7 +17,7 @@ class ChatBubble extends StatelessWidget {
   final Color authorTextColor;
   final Alignment alignment;
 
-  ChatBubble.fromMessage(Message message)
+  ChatBubble.fromMessage(ChatBubbleMessage message)
       : this(
           text: message.text,
           author: message.side.value == 0 ? "Xanho" : "You",
@@ -76,18 +76,18 @@ class ChatBubble extends StatelessWidget {
   }
 }
 
-class Message {
-  const Message(this.text, this.side);
+class ChatBubbleMessage {
+  const ChatBubbleMessage(this.text, this.side);
 
   final String text;
-  final MessageSide side;
+  final ChatBubbleMessageSide side;
 }
 
-class MessageSide {
-  const MessageSide(this.value);
+class ChatBubbleMessageSide {
+  const ChatBubbleMessageSide(this.value);
 
   final int value;
 
-  static final MessageSide left = const MessageSide(0);
-  static final MessageSide right = const MessageSide(1);
+  static final ChatBubbleMessageSide left = const ChatBubbleMessageSide(0);
+  static final ChatBubbleMessageSide right = const ChatBubbleMessageSide(1);
 }
