@@ -15,9 +15,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
       body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 720),
