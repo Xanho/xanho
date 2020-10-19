@@ -146,24 +146,22 @@ class _GraphPageImpl extends StatelessWidget {
           )
         ]));
 
+    final body = Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 1080),
+        child: Column(
+          children: [
+            streamBuilder,
+            form,
+          ],
+        ),
+      ),
+    );
     return Scaffold(
       appBar: AppBar(
         title: Text("Xanho Graph"),
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 1080),
-          child: Column(
-            children: [
-              Flexible(
-                fit: FlexFit.loose,
-                child: streamBuilder,
-              ),
-              form,
-            ],
-          ),
-        ),
-      ),
+      body: body,
     );
   }
 
