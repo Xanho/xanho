@@ -3,8 +3,8 @@ package org.xanho.knowledgegraph.actor
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.adapter._
-import akka.persistence.testkit.{PersistenceTestKitPlugin, PersistenceTestKitSnapshotPlugin}
 import akka.persistence.testkit.scaladsl.EventSourcedBehaviorTestKit
+import akka.persistence.testkit.{PersistenceTestKitPlugin, PersistenceTestKitSnapshotPlugin}
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
@@ -33,35 +33,34 @@ class KnowledgeGraphActorSpec
     eventSourcedTestKit.clear()
   }
 
+  private val message =
+    TextMessage(
+      id = "id1",
+      source = MessageSource.USER,
+      timestampMs = System.currentTimeMillis(),
+      text = "Hello world."
+    )
+
   behavior of "KnowledgeGraphActor"
 
   it should "parse and persist text input" in {
+
     val writeResult =
-      eventSourcedTestKit.runCommand[Done](replyTo => IngestText(replyTo.toClassic, "Hello world."))
+      eventSourcedTestKit.runCommand[Done](replyTo => IngestTextMessage(replyTo.toClassic, Some(message)))
 
     writeResult.reply shouldBe IngestTextResponse()
-    writeResult.event shouldBe TextIngested("Hello world.")
+    writeResult.event shouldBe TextMessageIngested(Some(message))
     val writeResultState =
       writeResult.stateOfType[KnowledgeGraphState]
 
-    val Some(document) =
-      writeResultState.parseResults.head.document
-
-    val paragraph =
-      document.paragraphs.head
-
-    val sentence =
-      paragraph.sentences.head
-
-    sentence.phrase.value.words.map(_.value) shouldBe Seq("Hello", "world")
-
-    sentence.punctuation.value.value shouldBe "."
+    writeResultState.messages.head shouldBe message
 
   }
 
   it should "return the state from a GetState request" in {
+
     val writeResult =
-      eventSourcedTestKit.runCommand[IngestTextResponse](replyTo => IngestText(replyTo.toClassic, "Hello world."))
+      eventSourcedTestKit.runCommand[Done](replyTo => IngestTextMessage(replyTo.toClassic, Some(message)))
 
     val getStateResult =
       eventSourcedTestKit.runCommand[GetStateResponse](replyTo => GetState(replyTo.toClassic))

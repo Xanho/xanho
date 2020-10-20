@@ -15,11 +15,11 @@ option (scalapb.options) = {
 
 // Commands
 
-message IngestText {
+message IngestTextMessage {
   option (scalapb.message).extends = "org.xanho.proto.knowledgegraphactor.KnowledgeGraphCommand";
 
   ActorReference replyTo = 1;
-  string text = 2;
+  TextMessage textMessage = 2;
 }
 
 message GetState {
@@ -28,7 +28,7 @@ message GetState {
   ActorReference replyTo = 1;
 }
 
-message GenerateResponse {
+message GenerateMessage {
   option (scalapb.message).extends = "org.xanho.proto.knowledgegraphactor.KnowledgeGraphCommand";
 
   ActorReference replyTo = 1;
@@ -38,6 +38,8 @@ message GenerateResponse {
 
 message IngestTextResponse {
   option (scalapb.message).extends = "org.xanho.proto.knowledgegraphactor.KnowledgeGraphResponse";
+
+  bool success = 1;
 }
 
 message GetStateResponse {
@@ -46,23 +48,35 @@ message GetStateResponse {
   KnowledgeGraphState state = 1;
 }
 
-message GenerateResponseResponse {
+message GenerateMessageResponse {
   option (scalapb.message).extends = "org.xanho.proto.knowledgegraphactor.KnowledgeGraphResponse";
 
-  org.xanho.proto.nlp.Document document = 1;
+  TextMessage message = 1;
 }
 
 // Events
 
-message TextIngested {
+message TextMessageIngested {
   option (scalapb.message).extends = "org.xanho.proto.knowledgegraphactor.KnowledgeGraphEvent";
 
-  string text = 1;
+  TextMessage message = 1;
 }
 
 // State
 
 message KnowledgeGraphState {
+  string id = 1;
+  repeated TextMessage messages = 2;
+}
 
-  repeated org.xanho.proto.nlp.ParseResult parseResults = 1;
+message TextMessage {
+  string id = 1;
+  MessageSource source = 2;
+  int64 timestampMs = 3;
+  string text = 4;
+}
+
+enum MessageSource {
+  USER = 0;
+  SYSTEM = 1;
 }

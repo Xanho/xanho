@@ -4,11 +4,12 @@ import org.xanho.knowledgegraph.actor.implicits.ops
 import org.xanho.proto.knowledgegraphactor.KnowledgeGraphState
 import org.xanho.proto.nlp.{Sentence, Token}
 import org.xanho.knowledgegraph.actor.implicits.WordImplicits
+import org.xanho.nlp.ops.implicits._
 
 class KnowledgeGraphOps(self: KnowledgeGraphState) {
 
   def allSentences: Seq[Sentence] =
-    self.parseResults
+    self.messages.map(_.text.parse)
       .flatMap(_.document)
       .flatMap(_.paragraphs)
       .flatMap(_.sentences)
