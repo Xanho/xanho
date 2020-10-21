@@ -6,12 +6,12 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter.ClassicActorSystemOps
 import akka.persistence.PersistentRepr
 import akka.persistence.query.scaladsl._
-import akka.persistence.query.{EventEnvelope, Offset, ReadJournalProvider, javadsl}
+import akka.persistence.query.{EventEnvelope, Offset, ReadJournalProvider}
 import akka.stream.scaladsl.{BroadcastHub, Source}
 import com.google.cloud.firestore.DocumentChange
 import com.typesafe.config.Config
 import org.xanho.lib.firestore.FirestoreApi
-
+import org.xanho.lib.firestore.persistence.javadsl.{FirestoreReadJournal => JFirestoreReadJournal}
 import scala.collection.JavaConverters._
 
 class FirestoreReadJournal(extendedActorSystem: ExtendedActorSystem, config: Config)
@@ -90,8 +90,9 @@ class FirestoreReadJournal(extendedActorSystem: ExtendedActorSystem, config: Con
 }
 
 class FirestoreReadJournalProvider(system: ExtendedActorSystem, config: Config) extends ReadJournalProvider {
-  override def scaladslReadJournal(): ReadJournal =
+  override def scaladslReadJournal(): FirestoreReadJournal =
     new FirestoreReadJournal(system, config)
 
-  override def javadslReadJournal(): javadsl.ReadJournal = ???
+  override def javadslReadJournal(): JFirestoreReadJournal =
+    new JFirestoreReadJournal(scaladslReadJournal())
 }
