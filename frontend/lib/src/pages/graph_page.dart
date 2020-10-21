@@ -1,10 +1,19 @@
 import 'dart:async';
 
+import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 
 import 'package:frontend/src/logic/graph_service.dart';
 import 'package:frontend/src/widgets/chat.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
+
+import '../proto/org/xanho/proto/service/knowledgeGraph.pb.dart';
+import '../proto/org/xanho/proto/service/knowledgeGraph.pb.dart';
+import '../proto/org/xanho/proto/service/knowledgeGraph.pb.dart';
+import '../widgets/chat.dart';
+import '../widgets/chat.dart';
+import '../widgets/chat.dart';
 
 class GraphPage extends StatefulWidget {
   const GraphPage(this._graphId);
@@ -50,20 +59,28 @@ class _GraphPageWithServiceState extends State<GraphPageWithService> {
   void initState() {
     super.initState();
     _streamController = StreamController<ChatBubbleMessage>();
-    _sendMessage = (message) async {
-      await widget._graphService.sendMessage(widget._graphId, message.text);
+    _sendMessage = (message) {
+      final textMessage = TextMessage()
+        ..id = Uuid().v4()
+        ..source = MessageSource.USER
+        ..text = message.text
+        ..timestampMs = Int64(DateTime.now().millisecondsSinceEpoch);
+
+      widget._graphService.sendMessage(widget._graphId, textMessage);
       _streamController.add(message);
-      final nextMessage = await widget._graphService
-          .receiveMessage(widget._graphId)
-          .then((m) => ChatBubbleMessage(m, ChatBubbleMessageSide.left));
-      _streamController.add(nextMessage);
     };
   }
 
   @override
   Widget build(BuildContext context) {
     return GraphPageImpl(
-      messagesStream: _streamController.stream,
+      messagesStream: widget._graphService.messagesStream(widget._graphId).map(
+            (textMessage) => ChatBubbleMessage(
+                textMessage.text,
+                textMessage.source == MessageSource.SYSTEM
+                    ? ChatBubbleMessageSide.left
+                    : ChatBubbleMessageSide.right),
+          ),
       sendMessage: this._sendMessage,
     );
   }

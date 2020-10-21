@@ -21,6 +21,7 @@ object KnowledgeGraphActor {
             case IngestTextMessage(replyTo, message, _) =>
               context.log.debug("Persisting IngestText event.  graphId={}", id)
               Effect.persist[KnowledgeGraphEvent, KnowledgeGraphState](TextMessageIngested(message))
+                .thenRun(_ => context.self.tell(GenerateMessage(context.system.ignoreRef.toClassic)))
                 .thenReply[IngestTextResponse](replyTo)(_ => IngestTextResponse())
             case GetState(replyTo, _) =>
               Effect.reply(replyTo)(GetStateResponse().withState(state))

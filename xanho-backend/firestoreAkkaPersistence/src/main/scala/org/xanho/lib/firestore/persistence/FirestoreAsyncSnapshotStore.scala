@@ -29,7 +29,7 @@ class FirestoreAsyncSnapshotStore(config: Config) extends SnapshotStore {
 
   private val snapshotStoreCollection: String =
     config.withFallback(
-      system.settings.config.getConfig("default-akka-persistence-snapshot-store-settings")
+      system.settings.config.getConfig("akka.persistence.snapshot-store.firestore")
     )
       .getString("firestore-collection")
 

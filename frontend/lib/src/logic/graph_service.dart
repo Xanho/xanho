@@ -1,6 +1,6 @@
 import 'package:frontend/src/proto/org/xanho/proto/service/knowledgeGraph.pbgrpc.dart';
-import 'package:frontend/src/proto/org/xanho/proto/nlp/nlp.pb.dart';
 
+import '../proto/org/xanho/proto/service/knowledgeGraph.pb.dart';
 import 'grpc_channel.dart' if (dart.library.html) 'grpc_web_channel.dart';
 
 class GraphService {
@@ -10,37 +10,15 @@ class GraphService {
 
   KnowledgeGraphServiceClient _stub;
 
-  Future<IngestTextStreamResponse> sendMessage(String graphId, String text) {
-    final request = IngestTextRequest()
-      ..graphId = graphId
-      ..text = text;
-    final res = _stub.ingestTextStream(Stream.value(request));
+  Stream<TextMessage> messagesStream(String graphId) => _stub.messagesStream(
+        MessagesStreamRequest()..graphId = graphId,
+      );
 
-    res.whenComplete(() => print("Done"));
-    return res;
-  }
-
-  Future<String> receiveMessage(String graphId) {
-    return _stub
-        .generateResponse(
-          GenerateResponseRequest()..graphId = graphId,
-        )
-        .then((res) => _documentToString(res.document))
-        .then((str) {
-      print(str);
-      return str;
-    });
-  }
-
-  String _documentToString(Document document) {
-    return document.paragraphs
-        .map((paragraph) => paragraph.sentences
-            .map(
-              (sentence) =>
-                  sentence.phrase.words.map((w) => w.value).join(" ") +
-                  sentence.punctuation.value,
-            )
-            .join(" "))
-        .join("\n\n");
-  }
+  Future<bool> sendMessage(String graphId, TextMessage message) => _stub
+      .sendTextMessage(
+        SendTextMessageRequest()
+          ..graphId = graphId
+          ..message = message,
+      )
+      .then((res) => res.success);
 }

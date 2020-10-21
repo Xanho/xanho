@@ -47,7 +47,9 @@ class _GraphIdFormState extends State<GraphIdForm> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => GraphPage(Uuid().v4()),
+            builder: (context) => GraphPage(
+              Uuid().v4(),
+            ),
           ),
         );
       },

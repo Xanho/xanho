@@ -15,7 +15,7 @@ class GrpcService()(implicit system: ActorSystem[_]) extends KnowledgeGraphServi
   import system.executionContext
 
   override def messagesStream(in: MessagesStreamRequest): Source[TextMessage, NotUsed] =
-    ???
+    knowledgeGraphDao.messagesStream(in.graphId)
 
   override def sendTextMessage(in: SendTextMessageRequest): Future[SendTextMessageResponse] =
     Future.successful(in.message)

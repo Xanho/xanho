@@ -5,58 +5,44 @@
 // @dart = 2.3
 // ignore_for_file: camel_case_types,non_constant_identifier_names,library_prefixes,unused_import,unused_shown_name,return_of_invalid_type
 
-const IngestTextRequest$json = const {
-  '1': 'IngestTextRequest',
+const MessageSource$json = const {
+  '1': 'MessageSource',
   '2': const [
-    const {'1': 'graphId', '3': 1, '4': 1, '5': 9, '10': 'graphId'},
-    const {'1': 'text', '3': 2, '4': 1, '5': 9, '10': 'text'},
+    const {'1': 'USER', '2': 0},
+    const {'1': 'SYSTEM', '2': 1},
   ],
 };
 
-const IngestTextStreamResponse$json = const {
-  '1': 'IngestTextStreamResponse',
-  '2': const [
-    const {'1': 'processedCount', '3': 1, '4': 1, '5': 5, '10': 'processedCount'},
-  ],
-};
-
-const GetAnalysisRequest$json = const {
-  '1': 'GetAnalysisRequest',
+const MessagesStreamRequest$json = const {
+  '1': 'MessagesStreamRequest',
   '2': const [
     const {'1': 'graphId', '3': 1, '4': 1, '5': 9, '10': 'graphId'},
   ],
 };
 
-const GetAnalysisResponse$json = const {
-  '1': 'GetAnalysisResponse',
+const TextMessage$json = const {
+  '1': 'TextMessage',
   '2': const [
-    const {'1': 'graphId', '3': 1, '4': 1, '5': 9, '10': 'graphId'},
-    const {'1': 'vocabulary', '3': 101, '4': 3, '5': 11, '6': '.org.xanho.proto.nlp.Token.Word', '10': 'vocabulary'},
-    const {'1': 'wordFrequencies', '3': 102, '4': 3, '5': 11, '6': '.org.xanho.proto.service.knowledgegraph.GetAnalysisResponse.WordFrequency', '10': 'wordFrequencies'},
-  ],
-  '3': const [GetAnalysisResponse_WordFrequency$json],
-};
-
-const GetAnalysisResponse_WordFrequency$json = const {
-  '1': 'WordFrequency',
-  '2': const [
-    const {'1': 'word', '3': 1, '4': 1, '5': 11, '6': '.org.xanho.proto.nlp.Token.Word', '10': 'word'},
-    const {'1': 'percent', '3': 2, '4': 1, '5': 1, '10': 'percent'},
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'source', '3': 2, '4': 1, '5': 14, '6': '.org.xanho.proto.service.knowledgegraph.MessageSource', '10': 'source'},
+    const {'1': 'timestampMs', '3': 3, '4': 1, '5': 3, '10': 'timestampMs'},
+    const {'1': 'text', '3': 4, '4': 1, '5': 9, '10': 'text'},
   ],
 };
 
-const GenerateResponseRequest$json = const {
-  '1': 'GenerateResponseRequest',
+const SendTextMessageRequest$json = const {
+  '1': 'SendTextMessageRequest',
   '2': const [
     const {'1': 'graphId', '3': 1, '4': 1, '5': 9, '10': 'graphId'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 11, '6': '.org.xanho.proto.service.knowledgegraph.TextMessage', '10': 'message'},
   ],
 };
 
-const GenerateResponseResponse$json = const {
-  '1': 'GenerateResponseResponse',
+const SendTextMessageResponse$json = const {
+  '1': 'SendTextMessageResponse',
   '2': const [
     const {'1': 'graphId', '3': 1, '4': 1, '5': 9, '10': 'graphId'},
-    const {'1': 'document', '3': 2, '4': 1, '5': 11, '6': '.org.xanho.proto.nlp.Document', '10': 'document'},
+    const {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
   ],
 };
 

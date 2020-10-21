@@ -1,10 +1,14 @@
 package org.xanho.knowledgegraph.service
 
+import akka.NotUsed
 import akka.actor.typed.scaladsl.adapter.TypedActorRefOps
 import akka.actor.typed.{ActorSystem, Extension, ExtensionId}
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity, EntityTypeKey}
+import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import org.xanho.knowledgegraph.actor.KnowledgeGraphActor
+import org.xanho.proto.knowledgegraphactor.TextMessageIngested
+import org.xanho.proto.service.knowledgegraph.TextMessage
 import org.xanho.proto.service.{knowledgegraph => serviceProtos}
 import org.xanho.proto.{knowledgegraphactor => kgaProtos}
 
@@ -23,6 +27,9 @@ class KnowledgeGraphDao(implicit system: ActorSystem[_]) extends Extension {
 
   private val KnowledgeGraphActorTypeKey: EntityTypeKey[kgaProtos.KnowledgeGraphCommand] =
     EntityTypeKey[kgaProtos.KnowledgeGraphCommand]("KnowledgeGraphCommand")
+
+  private val readJournal =
+    PersistenceReadJournal(system)()
 
   sharding.init(Entity(KnowledgeGraphActorTypeKey)(createBehavior = entityContext => KnowledgeGraphActor(entityContext.entityId)))
 
@@ -61,6 +68,23 @@ class KnowledgeGraphDao(implicit system: ActorSystem[_]) extends Extension {
           text = message.text
         )
       )
+
+  def messagesStream(graphId: String): Source[TextMessage, NotUsed] =
+    readJournal.eventsByPersistenceId(
+      graphId,
+      0L,
+      Long.MaxValue
+    )
+      .map(_.event)
+      .collect {
+        case TextMessageIngested(Some(message), _) =>
+          serviceProtos.TextMessage(
+            id = message.id,
+            source = serviceProtos.MessageSource.fromValue(message.source.value),
+            timestampMs = message.timestampMs,
+            text = message.text
+          )
+      }
 
   private def entityRef(graphId: String) =
     sharding.entityRefFor(KnowledgeGraphActorTypeKey, graphId)

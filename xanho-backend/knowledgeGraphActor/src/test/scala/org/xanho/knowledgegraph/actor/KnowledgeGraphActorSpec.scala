@@ -43,7 +43,7 @@ class KnowledgeGraphActorSpec
 
   behavior of "KnowledgeGraphActor"
 
-  it should "parse and persist text input" in {
+  it should "parse and persist text and generate a response" in {
 
     val writeResult =
       eventSourcedTestKit.runCommand[Done](replyTo => IngestTextMessage(replyTo.toClassic, Some(message)))
@@ -55,17 +55,15 @@ class KnowledgeGraphActorSpec
 
     writeResultState.messages.head shouldBe message
 
-  }
-
-  it should "return the state from a GetState request" in {
-
-    val writeResult =
-      eventSourcedTestKit.runCommand[Done](replyTo => IngestTextMessage(replyTo.toClassic, Some(message)))
-
     val getStateResult =
       eventSourcedTestKit.runCommand[GetStateResponse](replyTo => GetState(replyTo.toClassic))
 
-    getStateResult.reply.state.value shouldBe writeResult.stateOfType[KnowledgeGraphState]
+    val state =
+      getStateResult.reply.state.value
+
+    state.messages.size shouldBe 2
+    state.messages.head shouldBe writeResult.state.messages.head
+
   }
 
 }
