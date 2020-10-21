@@ -30,7 +30,7 @@ class FirestoreAsyncWriteJournal(config: Config) extends AsyncWriteJournal {
 
   private val writeJournalCollection: String =
     config.withFallback(
-      system.settings.config.getConfig("default-akka-persistence-write-journal-settings")
+      system.settings.config.getConfig("akka.persistence.journal.firestore")
     )
       .getString("firestore-collection")
 
@@ -105,42 +105,6 @@ class FirestoreAsyncWriteJournal(config: Config) extends AsyncWriteJournal {
   private def eventsReference(persistenceId: String): CollectionReference =
     persistenceReference(persistenceId)
       .collection("events")
-
-  def mapToRepr(map: Map[String, AnyRef]): PersistentRepr = {
-    val payload =
-      serialization.deserialize(
-        map("payload").asInstanceOf[Blob].toBytes,
-        map("payloadSerializerId").asInstanceOf[Number].intValue(),
-        map("payloadManifest").asInstanceOf[String]
-      ).get
-    PersistentRepr(
-      payload = payload,
-      sequenceNr = map("sequenceNr").asInstanceOf[java.lang.Number].longValue(),
-      persistenceId = map("persistenceId").asInstanceOf[String],
-      manifest = map.getOrElse("manifest", PersistentRepr.Undefined).asInstanceOf[String],
-      deleted = map.get("deleted").contains(true),
-      sender = null,
-      writerUuid = map.getOrElse("writerUuid", PersistentRepr.Undefined).asInstanceOf[String]
-    )
-  }
-
-  def persistenceReprToMap(repr: PersistentRepr): Map[String, AnyRef] = {
-    val boxedPayload =
-      box(repr.payload)
-    val serializer =
-      serialization.findSerializerFor(boxedPayload)
-    Map(
-      "payload" -> Blob.fromBytes(serialization.serialize(boxedPayload).get),
-      "payloadSerializerId" -> Int.box(serializer.identifier),
-      "payloadManifest" -> Serializers.manifestFor(serializer, boxedPayload),
-      "persistenceId" -> repr.persistenceId,
-      "sequenceNr" -> Long.box(repr.sequenceNr),
-      "timestamp" -> Long.box(repr.timestamp),
-      "manifest" -> repr.manifest,
-      "deleted" -> Boolean.box(repr.deleted),
-      "writerUuid" -> repr.writerUuid,
-    )
-  }
 }
 
 object FirestoreAsyncWriteJournal {

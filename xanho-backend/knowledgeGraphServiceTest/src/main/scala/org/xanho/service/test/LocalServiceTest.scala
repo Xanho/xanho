@@ -36,31 +36,32 @@ object LocalServiceTest extends App {
     "graph2"
 
   while (true) {
-
-    val Some(question) =
-      client.generateResponse(GenerateResponseRequest(graphId)).await.document
-
-    println(s"Xanho[$graphId]: ${question.write}")
-
-    val input = StdIn.readLine("You: ")
-
-    val ingestResult =
-      client.ingestTextStream(
-        Source(
-          List(
-            IngestTextRequest(
-              graphId = graphId,
-              text = input
-            )
-          )
-        )
-      )
-        .await
-
-    val analysis =
-      client.getAnalysis(GetAnalysisRequest(graphId = graphId)).await
-
-    log.debug("analysis={}", analysis)
+    ???
+//
+//    val Some(question) =
+//      client.(GenerateResponseRequest(graphId)).await.document
+//
+//    println(s"Xanho[$graphId]: ${question.write}")
+//
+//    val input = StdIn.readLine("You: ")
+//
+//    val ingestResult =
+//      client.ingestTextStream(
+//        Source(
+//          List(
+//            IngestTextRequest(
+//              graphId = graphId,
+//              text = input
+//            )
+//          )
+//        )
+//      )
+//        .await
+//
+//    val analysis =
+//      client.getAnalysis(GetAnalysisRequest(graphId = graphId)).await
+//
+//    log.debug("analysis={}", analysis)
 
   }
 

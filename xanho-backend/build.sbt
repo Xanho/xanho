@@ -155,5 +155,6 @@ lazy val firestoreAkkaPersistence =
       libraryDependencies ++= Seq(
         Dependencies.akkaModule("persistence-typed"),
         Dependencies.akkaModule("persistence-tck"),
+        Dependencies.akkaModule("persistence-query"),
       )
     )
