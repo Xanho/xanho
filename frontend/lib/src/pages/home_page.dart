@@ -1,7 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
+import 'package:provider/provider.dart';
 
-import './graph_page.dart';
+import './chat_page.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.title}) : super(key: key);
@@ -25,35 +26,27 @@ class _HomePageState extends State<HomePage> {
               Text(
                 'Get started.',
               ),
-              GraphIdForm(),
+              _goButton(context),
             ],
           ),
         ),
       ),
     );
   }
-}
 
-class GraphIdForm extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() => _GraphIdFormState();
-}
-
-class _GraphIdFormState extends State<GraphIdForm> {
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: () {
-        Navigator.push(
+  _goButton(BuildContext context) {
+    final onPressed = () => Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => GraphPage(
-              Uuid().v4(),
-            ),
+            builder: (context) => ChatPage(_defaultUserGraphId(context)),
           ),
         );
-      },
+    return IconButton(
+      onPressed: onPressed,
       icon: Icon(Icons.navigate_next_rounded),
     );
   }
+
+  _defaultUserGraphId(BuildContext context) =>
+      "user-graph-" + context.watch<User>().uid;
 }

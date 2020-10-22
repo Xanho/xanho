@@ -9,29 +9,25 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../proto/org/xanho/proto/service/knowledgeGraph.pb.dart';
-import '../proto/org/xanho/proto/service/knowledgeGraph.pb.dart';
-import '../proto/org/xanho/proto/service/knowledgeGraph.pb.dart';
-import '../widgets/chat.dart';
-import '../widgets/chat.dart';
 import '../widgets/chat.dart';
 
-class GraphPage extends StatefulWidget {
-  const GraphPage(this._graphId);
+class ChatPage extends StatefulWidget {
+  const ChatPage(this._graphId);
 
   final String _graphId;
 
   @override
   State<StatefulWidget> createState() {
-    return _GraphPageState();
+    return _ChatPageState();
   }
 }
 
-class _GraphPageState extends State<GraphPage> {
+class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Provider<GraphService>(
       create: (_) => GraphService(),
-      builder: (context, _) => GraphPageWithService(
+      builder: (context, _) => ChatPageWithService(
         context.watch<GraphService>(),
         widget._graphId,
       ),
@@ -39,19 +35,19 @@ class _GraphPageState extends State<GraphPage> {
   }
 }
 
-class GraphPageWithService extends StatefulWidget {
-  GraphPageWithService(this._graphService, this._graphId);
+class ChatPageWithService extends StatefulWidget {
+  ChatPageWithService(this._graphService, this._graphId);
 
   final GraphService _graphService;
   final String _graphId;
 
   @override
   State<StatefulWidget> createState() {
-    return _GraphPageWithServiceState();
+    return _ChatPageWithServiceState();
   }
 }
 
-class _GraphPageWithServiceState extends State<GraphPageWithService> {
+class _ChatPageWithServiceState extends State<ChatPageWithService> {
   StreamController<ChatBubbleMessage> _streamController;
   Function(ChatBubbleMessage) _sendMessage;
 
@@ -73,7 +69,7 @@ class _GraphPageWithServiceState extends State<GraphPageWithService> {
 
   @override
   Widget build(BuildContext context) {
-    return GraphPageImpl(
+    return ChatPageImpl(
       messagesStream: widget._graphService.messagesStream(widget._graphId).map(
             (textMessage) => ChatBubbleMessage(
                 textMessage.text,
@@ -86,17 +82,17 @@ class _GraphPageWithServiceState extends State<GraphPageWithService> {
   }
 }
 
-class GraphPageImpl extends StatefulWidget {
-  GraphPageImpl({this.messagesStream, this.sendMessage});
+class ChatPageImpl extends StatefulWidget {
+  ChatPageImpl({this.messagesStream, this.sendMessage});
 
   final Stream<ChatBubbleMessage> messagesStream;
   final Function(ChatBubbleMessage) sendMessage;
 
   @override
-  _GraphPageImplState createState() => _GraphPageImplState();
+  _ChatPageImplState createState() => _ChatPageImplState();
 }
 
-class _GraphPageImplState extends State<GraphPageImpl> {
+class _ChatPageImplState extends State<ChatPageImpl> {
   final _scrollController = ScrollController();
 
   final _formKey = GlobalKey<FormState>();
