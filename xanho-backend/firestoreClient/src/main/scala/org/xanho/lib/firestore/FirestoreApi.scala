@@ -1,7 +1,6 @@
 package org.xanho.lib.firestore
 
 import akka.actor.typed.{ActorSystem, Extension, ExtensionId}
-import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Sink, Source}
 import akka.{Done, NotUsed}
 import com.google.auth.oauth2.GoogleCredentials
@@ -10,8 +9,7 @@ import com.google.firebase.cloud.FirestoreClient
 import com.google.firebase.{FirebaseApp, FirebaseOptions}
 
 import scala.collection.JavaConverters._
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.util.Try
 
 class FirestoreApi(implicit system: ActorSystem[_]) extends Extension {
@@ -78,24 +76,9 @@ class FirestoreApi(implicit system: ActorSystem[_]) extends Extension {
         .runWith(Sink.ignore)
 
     def querySnapshotStream: Source[QuerySnapshot, NotUsed] =
-      Source.queue[QuerySnapshot](16, OverflowStrategy.backpressure)
-        .mapMaterializedValue { q =>
-          query
-            .addSnapshotListener(
-              (snapshot, exception) =>
-                Option(exception) match {
-                  case Some(exception) =>
-                    q.fail(exception)
-                  case _ =>
-                    // TODO: Gross...
-                    Await.result(
-                      q.offer(snapshot),
-                      1.seconds
-                    )
-                }
-            )
-          NotUsed
-        }
+      Source.fromGraph(
+        new FirestoreQuerySnapshotStream(query)
+      )
   }
 
   implicit class CollectionHelper(collection: CollectionReference) {

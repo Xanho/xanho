@@ -41,8 +41,7 @@ class FirestoreReadJournal(extendedActorSystem: ExtendedActorSystem, config: Con
       .runWith(BroadcastHub.sink)
 
   override def persistenceIds(): Source[String, NotUsed] =
-    currentPersistenceIds()
-      .concat(reusableNewPersistenceIdSource)
+    reusableNewPersistenceIdSource
 
   override def currentPersistenceIds(): Source[String, NotUsed] =
     firestore.collection(firestoreCollection)
@@ -51,19 +50,15 @@ class FirestoreReadJournal(extendedActorSystem: ExtendedActorSystem, config: Con
       .map(_.getId)
 
   override def eventsByPersistenceId(persistenceId: String, fromSequenceNr: Long, toSequenceNr: Long): Source[EventEnvelope, NotUsed] =
-    currentEventsByPersistenceId(persistenceId, fromSequenceNr, toSequenceNr)
-      .concat(
-        firestore.collection(firestoreCollection)
-          .document(persistenceId)
-          .collection("events")
-          .querySnapshotStream
-          .mapConcat(_.getDocumentChanges.asScala.toList)
-          .filter(_.getType == DocumentChange.Type.ADDED)
-          .map(_.getDocument.getData.asScala.toMap)
-          .map(mapToRepr)
-          .map(persistentReprToEventEnvelope)
-      )
-
+    firestore.collection(firestoreCollection)
+      .document(persistenceId)
+      .collection("events")
+      .querySnapshotStream
+      .mapConcat(_.getDocumentChanges.asScala.toList)
+      .filter(_.getType == DocumentChange.Type.ADDED)
+      .map(_.getDocument.getData.asScala.toMap)
+      .map(mapToRepr)
+      .map(persistentReprToEventEnvelope)
 
   override def currentEventsByPersistenceId(persistenceId: String, fromSequenceNr: Long, toSequenceNr: Long): Source[EventEnvelope, NotUsed] =
     firestore.collection(firestoreCollection)
