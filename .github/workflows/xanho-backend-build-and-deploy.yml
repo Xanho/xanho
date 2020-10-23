@@ -82,7 +82,7 @@ jobs:
       - name: Deploy
         working-directory: ./xanho-backend/deploy/kubernetes
         run: |-
-          ./kustomize edit set image gcr.io/PROJECT_ID/IMAGE:TAG=gcr.io/$PROJECT_ID/$IMAGE:${{ github.event.inputs.tag }}
+          ./kustomize edit set image gcr.io/PROJECT_ID/IMAGE:TAG=gcr.io/$PROJECT_ID/$IMAGE:${{ github.sha }}
           ./kustomize build . | kubectl apply -n xanho-backend -f -
           kubectl rollout status -n xanho-backend deployment/$DEPLOYMENT_NAME
           kubectl get services -n xanho-backend -o wide
