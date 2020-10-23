@@ -1,12 +1,18 @@
 package org.xanho.knowledgegraph.actor.implicits.ops
 
 import org.xanho.knowledgegraph.actor.implicits.ops
-import org.xanho.proto.knowledgegraphactor.KnowledgeGraphState
+import org.xanho.proto.knowledgegraphactor.{KnowledgeGraphState, MessageSource, TextMessage}
 import org.xanho.proto.nlp.{Sentence, Token}
 import org.xanho.knowledgegraph.actor.implicits.WordImplicits
 import org.xanho.nlp.ops.implicits._
 
 class KnowledgeGraphOps(self: KnowledgeGraphState) {
+
+  def systemMessages: Seq[TextMessage] =
+    self.messages.filter(_.source == MessageSource.SYSTEM)
+
+  def userMessages: Seq[TextMessage] =
+    self.messages.filter(_.source == MessageSource.USER)
 
   def allSentences: Seq[Sentence] =
     self.messages.map(_.text.parse)
