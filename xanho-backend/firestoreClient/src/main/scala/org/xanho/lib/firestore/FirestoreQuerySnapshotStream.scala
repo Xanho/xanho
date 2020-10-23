@@ -73,6 +73,8 @@ class FirestoreQuerySnapshotStream(query: Query) extends GraphStage[SourceShape[
         failStage(throwable)
         listenerRegistration.remove()
       }
+
+      setHandler(out, this)
     }
   }
 

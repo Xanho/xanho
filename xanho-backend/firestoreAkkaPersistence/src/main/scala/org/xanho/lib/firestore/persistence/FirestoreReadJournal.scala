@@ -31,17 +31,13 @@ class FirestoreReadJournal(extendedActorSystem: ExtendedActorSystem, config: Con
   private val firestoreCollection =
     config.getString("firestore-collection")
 
-  private val reusableNewPersistenceIdSource: Source[String, NotUsed] =
+  override def persistenceIds(): Source[String, NotUsed] =
     firestore.collection(firestoreCollection)
       .select(Array.empty[String]: _*)
       .querySnapshotStream
       .mapConcat(_.getDocumentChanges.asScala.toList)
       .filter(_.getType == DocumentChange.Type.ADDED)
       .map(_.getDocument.getId)
-      .runWith(BroadcastHub.sink)
-
-  override def persistenceIds(): Source[String, NotUsed] =
-    reusableNewPersistenceIdSource
 
   override def currentPersistenceIds(): Source[String, NotUsed] =
     firestore.collection(firestoreCollection)
