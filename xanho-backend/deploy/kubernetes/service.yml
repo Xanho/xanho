@@ -4,7 +4,7 @@ metadata:
   namespace: xanho-backend
   name: xanho-backend
   annotations:
-    cloud.google.com/app-protocols: '{"app":"HTTP2", "app-grpc-web":"HTTPS"}'
+    cloud.google.com/app-protocols: '{"app":"HTTP2", "app-grpc-web":"HTTP2"}'
     cloud.google.com/neg: '{"ingress": true}'
     cloud.google.com/backend-config: '{"default": "xanho-backend-healthcheck"}'
 spec:
