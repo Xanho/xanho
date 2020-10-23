@@ -77,10 +77,7 @@ class FirestoreAsyncSnapshotStore(config: Config) extends SnapshotStore {
       .map(_.getReference)
       .grouped(10)
       .map(group =>
-        group.foldLeft(firestore.batch())(
-          (batch, snapshot) =>
-            batch.delete(snapshot)
-        ).commit().scalaFuture
+        group.foldLeft(firestore.batch())(_.delete(_)).commit().scalaFuture
       )
       .mapAsync(1)(identity)
       .runWith(Sink.ignore)
@@ -139,8 +136,4 @@ class FirestoreAsyncSnapshotStore(config: Config) extends SnapshotStore {
       "sequenceNr" -> Long.box(snapshotMetadata.sequenceNr),
       "timestamp" -> Long.box(snapshotMetadata.timestamp)
     )
-}
-
-object FirestoreAsyncSnapshotStore {
-
 }

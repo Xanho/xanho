@@ -6,7 +6,7 @@ import akka.persistence.journal.AsyncWriteJournal
 import akka.persistence.{AtomicWrite, PersistentRepr}
 import akka.serialization._
 import akka.stream.scaladsl.{Sink, Source}
-import com.google.cloud.firestore.{Blob, CollectionReference, DocumentReference, SetOptions}
+import com.google.cloud.firestore.{CollectionReference, DocumentReference, SetOptions}
 import com.typesafe.config.Config
 import org.xanho.lib.firestore.FirestoreApi
 import org.xanho.lib.firestore.implicits.FirestoreFutureHelper
@@ -36,26 +36,26 @@ class FirestoreAsyncWriteJournal(config: Config) extends AsyncWriteJournal {
 
   override def asyncWriteMessages(messages: immutable.Seq[AtomicWrite]): Future[immutable.Seq[Try[Unit]]] =
     Source(messages)
-      .map(atomicWrite =>
-        createDocumentIfNotExists(
-          persistenceReference(atomicWrite.persistenceId)
-        )
-          .flatMap(_ =>
-            atomicWrite.payload
-              .foldLeft(firestore.batch())(
-                (batchWrite, repr) =>
-                  batchWrite.set(
-                    eventsReference(repr.persistenceId).document(repr.sequenceNr.toString),
-                    persistenceReprToMap(repr).asJava
-                  )
-              )
-              .commit().scalaFuture
-              .map(_ => ())
-              .transform(Success(_))
-          )
-      )
-      .mapAsync(10)(identity)
+      .mapAsync(10)(handleAtomicWrite)
       .runWith(Sink.seq)
+
+  private def handleAtomicWrite(atomicWrite: AtomicWrite): Future[Try[Unit]] =
+    createDocumentIfNotExists(
+      persistenceReference(atomicWrite.persistenceId)
+    )
+      .flatMap(_ =>
+        atomicWrite.payload
+          .foldLeft(firestore.batch())(
+            (batchWrite, repr) =>
+              batchWrite.set(
+                eventsReference(repr.persistenceId).document(repr.sequenceNr.toString),
+                persistenceReprToMap(repr).asJava
+              )
+          )
+          .commit().scalaFuture
+          .map(_ => ())
+          .transform(Success(_))
+      )
 
   override def asyncDeleteMessagesTo(persistenceId: String, toSequenceNr: Long): Future[Unit] =
     eventsReference(persistenceId)

@@ -4,12 +4,14 @@ import akka.NotUsed
 import akka.persistence.query.EventEnvelope
 import akka.persistence.query.javadsl._
 import akka.stream.javadsl.Source
+import org.xanho.lib.firestore.persistence.scaladsl.{FirestoreReadJournal => SFirestoreReadJournal}
 
-class FirestoreReadJournal(scalaFirestoreReadJournal: org.xanho.lib.firestore.persistence.FirestoreReadJournal) extends ReadJournal
+class FirestoreReadJournal(scalaFirestoreReadJournal: SFirestoreReadJournal) extends ReadJournal
   with PersistenceIdsQuery
   with CurrentPersistenceIdsQuery
   with EventsByPersistenceIdQuery
   with CurrentEventsByPersistenceIdQuery {
+
   override def persistenceIds(): Source[String, NotUsed] =
     scalaFirestoreReadJournal.persistenceIds().asJava
 

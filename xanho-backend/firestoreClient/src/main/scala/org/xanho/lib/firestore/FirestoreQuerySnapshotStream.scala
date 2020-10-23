@@ -54,7 +54,7 @@ class FirestoreQuerySnapshotStream(query: Query) extends GraphStage[SourceShape[
             // TODO: Gross...
             Await.result(
               snapshotProcessed.future,
-              1.minutes
+              10.minutes
             )
         }
       }

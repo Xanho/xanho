@@ -41,7 +41,7 @@ class GrpcServer(implicit system: ActorSystem[_]) extends Extension {
       XanhoHttps(system).contextOpt
         .foldLeft(
           Http()(system.classicSystem).newServerAt(bindingHost, bindingPort)
-        )((server, https) => server.enableHttps(https))
+        )(_.enableHttps(_))
     bindingPromise.completeWith(
       serverBuilder.bind(handler)
     )

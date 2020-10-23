@@ -18,9 +18,11 @@ trait Service {
 
   protected def run(): Unit = {
     val f =
-      preStart()
-        .flatMap(_ => startAppServer())
-        .flatMap(_ => startHealthcheckServer())
+      for {
+        _ <- preStart()
+        _ <- startAppServer()
+        _ <- startHealthcheckServer()
+      } yield Done
 
     Await.result(f, 30.seconds)
   }
