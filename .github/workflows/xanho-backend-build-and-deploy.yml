@@ -52,6 +52,7 @@ jobs:
           docker push "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA"
   deploy:
     name: Deploy
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
