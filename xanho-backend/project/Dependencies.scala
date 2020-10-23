@@ -33,4 +33,7 @@ object Dependencies {
   val levelDb =
     "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
 
+  val openNlp =
+    "org.apache.opennlp" % "opennlp-tools" % "1.9.3"
+
 }

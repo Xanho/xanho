@@ -49,6 +49,11 @@ lazy val nlp =
   project
     .settings(commonSettings: _*)
     .dependsOn(protos)
+    .settings(
+      libraryDependencies ++= Seq(
+        Dependencies.openNlp,
+      )
+    )
 
 lazy val akkaGrpcCompat =
   project

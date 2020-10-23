@@ -38,7 +38,7 @@ object KnowledgeGraphActor {
             id = UUID.randomUUID().toString,
             source = MessageSource.SYSTEM,
             timestampMs = System.currentTimeMillis(),
-            text = ResponseGenerator.generate(state)
+            text = ResponseGenerator(context.system).generate(state)
           )
         Effect.persist(TextMessageIngested(Some(responseMessage)))
           .thenReply(replyTo)(_ => GenerateMessageResponse(Some(responseMessage)))
