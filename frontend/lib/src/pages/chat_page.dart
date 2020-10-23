@@ -101,11 +101,9 @@ class _ChatPageImplState extends State<ChatPageImpl> {
 
   Stream<List<ChatBubbleMessage>> get _statefulStream {
     var items = new List<ChatBubbleMessage>();
-    return widget.messagesStream.map((item) {
-      items = List.of(items);
-      items.add(item);
-      return items;
-    });
+    return widget.messagesStream.map(
+      (item) => List.of(items)..add(item),
+    );
   }
 
   _transitionToBottom() {
@@ -120,7 +118,7 @@ class _ChatPageImplState extends State<ChatPageImpl> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Xanho Graph"),
+        title: const Text("Chat"),
       ),
       body: _body(context),
     );
@@ -130,9 +128,7 @@ class _ChatPageImplState extends State<ChatPageImpl> {
     final onItems = (List<ChatBubbleMessage> items) {
       Timer(
         Duration(milliseconds: 200),
-        () {
-          _transitionToBottom();
-        },
+        _transitionToBottom,
       );
       return items;
     };
@@ -151,7 +147,7 @@ class _ChatPageImplState extends State<ChatPageImpl> {
           TextFormField(
             validator: (value) {
               if (value.isEmpty) {
-                return "Please enter a Graph ID.";
+                return "Please type a message.";
               }
               return null;
             },

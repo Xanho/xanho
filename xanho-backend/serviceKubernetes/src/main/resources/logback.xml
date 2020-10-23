@@ -13,6 +13,8 @@
         <neverBlock>true</neverBlock>
         <appender-ref ref="STDOUT" />
     </appender>
+    
+    <logger name="org.xanho" level="debug" />
 
     <root level="INFO">
         <appender-ref ref="ASYNC"/>

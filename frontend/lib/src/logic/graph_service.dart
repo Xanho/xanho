@@ -10,8 +10,12 @@ class GraphService {
 
   KnowledgeGraphServiceClient _stub;
 
-  Stream<TextMessage> messagesStream(String graphId) => _stub.messagesStream(
+  Stream<TextMessage> messagesStream(String graphId) => _stub
+      .messagesStream(
         MessagesStreamRequest()..graphId = graphId,
+      )
+      .handleError(
+        (_) {},
       );
 
   Future<bool> sendMessage(String graphId, TextMessage message) => _stub
