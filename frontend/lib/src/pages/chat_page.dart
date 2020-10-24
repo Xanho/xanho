@@ -102,7 +102,10 @@ class _ChatPageImplState extends State<ChatPageImpl> {
   Stream<List<ChatBubbleMessage>> get _statefulStream {
     var items = new List<ChatBubbleMessage>();
     return widget.messagesStream.map(
-      (item) => List.of(items)..add(item),
+      (item) {
+        items = List.of(items)..add(item);
+        return items;
+      },
     );
   }
 
