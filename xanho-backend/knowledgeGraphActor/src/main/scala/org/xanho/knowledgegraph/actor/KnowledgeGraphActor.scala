@@ -7,6 +7,9 @@ import akka.actor.typed.scaladsl.adapter._
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect}
+import org.xanho.nlp.graph.ops.implicits.nlpGraphBuilderOps
+import org.xanho.nlp.ops.implicits.nlpStringOps
+import org.xanho.proto.graph
 import org.xanho.proto.knowledgegraphactor._
 
 object KnowledgeGraphActor {
@@ -48,7 +51,19 @@ object KnowledgeGraphActor {
                   (state: KnowledgeGraphState, event: KnowledgeGraphEvent): KnowledgeGraphState =
     event match {
       case TextMessageIngested(Some(message), _) =>
+        val updatedGraph =
+          Some(message.source)
+            .filter(_ == MessageSource.USER)
+            .flatMap(_ =>
+              message.text.parse.document
+                .map(document =>
+                  state.graph.getOrElse(graph.Graph.defaultInstance)
+                    .withDocument(document)._1
+                )
+            )
+            .orElse(state.graph)
         state.addMessages(message)
+          .copy(graph = updatedGraph)
       case _ =>
         state
     }

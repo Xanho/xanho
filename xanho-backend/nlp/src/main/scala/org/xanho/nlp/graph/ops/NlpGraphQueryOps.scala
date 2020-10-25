@@ -2,7 +2,9 @@ package org.xanho.nlp.graph.ops
 
 import org.xanho.dictionary.Dictionary
 import org.xanho.graph.ops.implicits._
+import org.xanho.nlp.Constants
 import org.xanho.nlp.graph._
+import org.xanho.nlp.graph.ops.implicits._
 import org.xanho.proto.graph._
 import org.xanho.proto.nlp
 
@@ -49,5 +51,22 @@ class NlpGraphQuery(val graph: Graph) extends AnyVal {
 
   def documentNodes: Stream[DocumentNode] =
     graph.nodesByType(NodeTypes.Document)
+
+  def questions: Stream[SentenceNode] =
+    sentenceNodes
+      .filter(sentenceNode =>
+        sentenceNode.sentencePunctuation(graph)
+          .exists(_.punctuationValue == Constants.QuestionMark)
+      )
+
+  def statements: Stream[SentenceNode] =
+    sentenceNodes
+      .filter(sentenceNode =>
+        sentenceNode.sentencePunctuation(graph)
+          .exists(p =>
+            Set(Constants.Period, Constants.ExclamationMark, Constants.QuestionMark)
+              .contains(p.punctuationValue)
+          )
+      )
 
 }

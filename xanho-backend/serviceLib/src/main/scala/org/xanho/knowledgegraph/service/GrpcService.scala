@@ -27,4 +27,9 @@ class GrpcService()(implicit system: ActorSystem[_]) extends KnowledgeGraphServi
           Future.failed(new IllegalArgumentException())
       }
 
+  override def getGraph(in: GetGraphRequest): Future[GetGraphResponse] =
+    knowledgeGraphDao
+      .getState(in.graphId)
+      .map(_.graph)
+      .map(GetGraphResponse(in.graphId, _))
 }

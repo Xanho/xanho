@@ -24,8 +24,8 @@ class NlpNode(val node: Node) extends AnyVal {
       .flatMap(Dictionary()(_))
       .getOrElse(node.dataOrEmpty.values("value").getStringValue)
 
-  def punctuationValue: String =
-    node.dataOrEmpty.values("value").getStringValue
+  def punctuationValue: Char =
+    node.dataOrEmpty.values("value").getStringValue.head
 
   def phraseWords(implicit graph: Graph): Stream[WordNode] =
     node.sourceEdges
