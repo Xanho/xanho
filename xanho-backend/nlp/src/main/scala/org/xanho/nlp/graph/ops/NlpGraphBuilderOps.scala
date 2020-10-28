@@ -1,6 +1,5 @@
 package org.xanho.nlp.graph.ops
 
-import org.xanho.dictionary.Dictionary
 import org.xanho.graph.ops.implicits._
 import org.xanho.nlp.graph._
 import org.xanho.nlp.graph.ops.implicits._
@@ -25,10 +24,7 @@ class NlpGraphBuilder[T](val graph: Graph) extends AnyVal {
 
   def withWord(word: nlp.Token.Word): (Graph, WordNode) = {
     val data =
-      Dictionary()(word.value) match {
-        case Some(index) => Map("index" -> Data().withIntValue(index))
-        case _ => Map("value" -> Data().withStringValue(word.value))
-      }
+      Map("value" -> Data().withStringValue(word.value))
     graph.withNode(NodeTypes.Word, DataObject(data))
   }
 
@@ -120,15 +116,5 @@ class NlpGraphBuilder[T](val graph: Graph) extends AnyVal {
         }
     (withEdges, documentNode)
   }
-
-  def withResolvedWordNodes: Graph =
-    graph.withNodes(
-      graph.nodes.map {
-        case node if node.nodeType == NodeTypes.Word =>
-          node.resolvedWordNode
-        case node =>
-          node
-      }
-    )
 
 }

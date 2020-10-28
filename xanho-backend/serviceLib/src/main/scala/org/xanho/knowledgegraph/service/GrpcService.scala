@@ -32,6 +32,6 @@ class GrpcService()(implicit system: ActorSystem[_]) extends KnowledgeGraphServi
   override def getGraph(in: GetGraphRequest): Future[GetGraphResponse] =
     knowledgeGraphDao
       .getState(in.graphId)
-      .map(_.graph.map(_.withResolvedWordNodes).orElse(Some(Graph.defaultInstance)))
+      .map(_.graph.orElse(Some(Graph.defaultInstance)))
       .map(GetGraphResponse(in.graphId, _))
 }

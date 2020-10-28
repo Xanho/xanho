@@ -1,6 +1,5 @@
 package org.xanho.nlp.graph.ops
 
-import org.xanho.dictionary.Dictionary
 import org.xanho.graph.ops.implicits._
 import org.xanho.nlp.Constants
 import org.xanho.nlp.graph._
@@ -23,12 +22,8 @@ class NlpGraphQuery(val graph: Graph) extends AnyVal {
 
   def wordNode(word: nlp.Token.Word): Option[WordNode] =
     graph.nodesByType(NodeTypes.Word)
-      .find(
-        Dictionary()(word.value).fold(
-          (node: Node) => node.dataOrEmpty.values.get("value").exists(_.getStringValue == word.value)
-        )(idx =>
-          (node: Node) => node.dataOrEmpty.values.get("index").exists(_.getIntValue == idx)
-        )
+      .find(node =>
+        node.dataOrEmpty.values.get("value").exists(_.getStringValue == word.value)
       )
 
   def punctuationNode(punctuation: nlp.Token.Punctuation): Option[PunctuationNode] =
