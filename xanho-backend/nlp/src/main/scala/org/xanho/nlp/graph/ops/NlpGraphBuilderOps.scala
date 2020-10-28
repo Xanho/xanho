@@ -121,4 +121,14 @@ class NlpGraphBuilder[T](val graph: Graph) extends AnyVal {
     (withEdges, documentNode)
   }
 
+  def withResolvedWordNodes: Graph =
+    graph.withNodes(
+      graph.nodes.map {
+        case node if node.nodeType == NodeTypes.Word =>
+          node.resolvedWordNode
+        case node =>
+          node
+      }
+    )
+
 }

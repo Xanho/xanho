@@ -46,3 +46,18 @@ const SendTextMessageResponse$json = const {
   ],
 };
 
+const GetGraphRequest$json = const {
+  '1': 'GetGraphRequest',
+  '2': const [
+    const {'1': 'graphId', '3': 1, '4': 1, '5': 9, '10': 'graphId'},
+  ],
+};
+
+const GetGraphResponse$json = const {
+  '1': 'GetGraphResponse',
+  '2': const [
+    const {'1': 'graphId', '3': 1, '4': 1, '5': 9, '10': 'graphId'},
+    const {'1': 'graph', '3': 2, '4': 1, '5': 11, '6': '.org.xanho.proto.graph.Graph', '10': 'graph'},
+  ],
+};
+

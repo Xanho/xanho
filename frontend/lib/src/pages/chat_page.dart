@@ -4,6 +4,7 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 
 import 'package:frontend/src/logic/graph_service.dart';
+import 'package:frontend/src/pages/graph_page.dart';
 import 'package:frontend/src/widgets/chat.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -70,6 +71,7 @@ class _ChatPageWithServiceState extends State<ChatPageWithService> {
   @override
   Widget build(BuildContext context) {
     return ChatPageImpl(
+      graphId: widget._graphId,
       messagesStream: widget._graphService.messagesStream(widget._graphId).map(
             (textMessage) => ChatBubbleMessage(
                 textMessage.text,
@@ -83,8 +85,12 @@ class _ChatPageWithServiceState extends State<ChatPageWithService> {
 }
 
 class ChatPageImpl extends StatefulWidget {
-  ChatPageImpl({this.messagesStream, this.sendMessage});
+  ChatPageImpl(
+      {@required this.graphId,
+      @required this.messagesStream,
+      @required this.sendMessage});
 
+  final String graphId;
   final Stream<ChatBubbleMessage> messagesStream;
   final Function(ChatBubbleMessage) sendMessage;
 
@@ -181,11 +187,22 @@ class _ChatPageImplState extends State<ChatPageImpl> {
           children: [
             Flexible(child: _streamBuilder(context)),
             _form(context),
+            _viewGraph,
           ],
         ),
       ),
     );
   }
+
+  get _viewGraph => TextButton(
+        child: Text("Graph View"),
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GraphPage(widget.graphId),
+          ),
+        ),
+      );
 
   _listView(List<ChatBubbleMessage> messages) => ListView.builder(
         itemCount: messages.length,

@@ -3,6 +3,8 @@ package org.xanho.knowledgegraph.service
 import akka.NotUsed
 import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.Source
+import org.xanho.nlp.graph.ops.implicits.nlpGraphBuilderOps
+import org.xanho.proto.graph.Graph
 import org.xanho.proto.service.knowledgegraph._
 
 import scala.concurrent.Future
@@ -30,6 +32,6 @@ class GrpcService()(implicit system: ActorSystem[_]) extends KnowledgeGraphServi
   override def getGraph(in: GetGraphRequest): Future[GetGraphResponse] =
     knowledgeGraphDao
       .getState(in.graphId)
-      .map(_.graph)
+      .map(_.graph.map(_.withResolvedWordNodes).orElse(Some(Graph.defaultInstance)))
       .map(GetGraphResponse(in.graphId, _))
 }

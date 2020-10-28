@@ -1,3 +1,4 @@
+import 'package:frontend/src/proto/org/xanho/proto/graph/graph.pb.dart';
 import 'package:frontend/src/proto/org/xanho/proto/service/knowledgeGraph.pbgrpc.dart';
 
 import '../proto/org/xanho/proto/service/knowledgeGraph.pb.dart';
@@ -25,4 +26,8 @@ class GraphService {
           ..message = message,
       )
       .then((res) => res.success);
+
+  Future<Graph> getGraph(String graphId) => _stub
+      .getGraph(GetGraphRequest()..graphId = graphId)
+      .then((res) => res.graph);
 }

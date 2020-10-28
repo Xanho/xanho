@@ -1,9 +1,9 @@
 package org.xanho.nlp.graph.ops
 
 import org.xanho.dictionary.Dictionary
-import org.xanho.proto.graph._
 import org.xanho.graph.ops.implicits._
 import org.xanho.nlp.graph._
+import org.xanho.proto.graph._
 
 import scala.language.implicitConversions
 
@@ -26,6 +26,15 @@ class NlpNode(val node: Node) extends AnyVal {
 
   def punctuationValue: Char =
     node.dataOrEmpty.values("value").getStringValue.head
+
+  def resolvedWordNode: Node =
+    node.dataOrEmpty.values.get("index")
+      .map(indexData =>
+        node.withData(
+          DataObject(Map("value" -> Data().withStringValue(Dictionary()(indexData.getIntValue).get)))
+        )
+      )
+      .getOrElse(node)
 
   def phraseWords(implicit graph: Graph): Stream[WordNode] =
     node.sourceEdges
