@@ -3,6 +3,7 @@ syntax = "proto3";
 package org.xanho.proto.knowledgegraphactor;
 
 import "scalapb/scalapb.proto";
+import "org/xanho/proto/graph/graph.proto";
 import "org/xanho/proto/nlp/nlp.proto";
 import "org/xanho/proto/akkaGrpcCompat.proto";
 
@@ -67,6 +68,7 @@ message TextMessageIngested {
 message KnowledgeGraphState {
   string id = 1;
   repeated TextMessage messages = 2;
+  org.xanho.proto.graph.Graph graph = 3;
 }
 
 message TextMessage {

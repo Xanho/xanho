@@ -10,6 +10,8 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
+import '../graph/graph.pb.dart' as $1;
+
 import 'knowledgeGraph.pbenum.dart';
 
 export 'knowledgeGraph.pbenum.dart';
@@ -188,5 +190,79 @@ class SendTextMessageResponse extends $pb.GeneratedMessage {
   $core.bool hasSuccess() => $_has(1);
   @$pb.TagNumber(2)
   void clearSuccess() => clearField(2);
+}
+
+class GetGraphRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('GetGraphRequest', package: const $pb.PackageName('org.xanho.proto.service.knowledgegraph'), createEmptyInstance: create)
+    ..aOS(1, 'graphId', protoName: 'graphId')
+    ..hasRequiredFields = false
+  ;
+
+  GetGraphRequest._() : super();
+  factory GetGraphRequest() => create();
+  factory GetGraphRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetGraphRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  GetGraphRequest clone() => GetGraphRequest()..mergeFromMessage(this);
+  GetGraphRequest copyWith(void Function(GetGraphRequest) updates) => super.copyWith((message) => updates(message as GetGraphRequest));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetGraphRequest create() => GetGraphRequest._();
+  GetGraphRequest createEmptyInstance() => create();
+  static $pb.PbList<GetGraphRequest> createRepeated() => $pb.PbList<GetGraphRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetGraphRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetGraphRequest>(create);
+  static GetGraphRequest _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get graphId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set graphId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasGraphId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearGraphId() => clearField(1);
+}
+
+class GetGraphResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('GetGraphResponse', package: const $pb.PackageName('org.xanho.proto.service.knowledgegraph'), createEmptyInstance: create)
+    ..aOS(1, 'graphId', protoName: 'graphId')
+    ..aOM<$1.Graph>(2, 'graph', subBuilder: $1.Graph.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetGraphResponse._() : super();
+  factory GetGraphResponse() => create();
+  factory GetGraphResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetGraphResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  GetGraphResponse clone() => GetGraphResponse()..mergeFromMessage(this);
+  GetGraphResponse copyWith(void Function(GetGraphResponse) updates) => super.copyWith((message) => updates(message as GetGraphResponse));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetGraphResponse create() => GetGraphResponse._();
+  GetGraphResponse createEmptyInstance() => create();
+  static $pb.PbList<GetGraphResponse> createRepeated() => $pb.PbList<GetGraphResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetGraphResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetGraphResponse>(create);
+  static GetGraphResponse _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get graphId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set graphId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasGraphId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearGraphId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $1.Graph get graph => $_getN(1);
+  @$pb.TagNumber(2)
+  set graph($1.Graph v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasGraph() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearGraph() => clearField(2);
+  @$pb.TagNumber(2)
+  $1.Graph ensureGraph() => $_ensure(1);
 }
 

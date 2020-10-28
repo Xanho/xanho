@@ -25,6 +25,11 @@ class KnowledgeGraphServiceClient extends $grpc.Client {
       ($0.SendTextMessageRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $0.SendTextMessageResponse.fromBuffer(value));
+  static final _$getGraph = $grpc.ClientMethod<$0.GetGraphRequest,
+          $0.GetGraphResponse>(
+      '/org.xanho.proto.service.knowledgegraph.KnowledgeGraphService/GetGraph',
+      ($0.GetGraphRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetGraphResponse.fromBuffer(value));
 
   KnowledgeGraphServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions options})
@@ -44,6 +49,13 @@ class KnowledgeGraphServiceClient extends $grpc.Client {
       {$grpc.CallOptions options}) {
     final call = $createCall(
         _$sendTextMessage, $async.Stream.fromIterable([request]),
+        options: options);
+    return $grpc.ResponseFuture(call);
+  }
+
+  $grpc.ResponseFuture<$0.GetGraphResponse> getGraph($0.GetGraphRequest request,
+      {$grpc.CallOptions options}) {
+    final call = $createCall(_$getGraph, $async.Stream.fromIterable([request]),
         options: options);
     return $grpc.ResponseFuture(call);
   }
@@ -71,6 +83,13 @@ abstract class KnowledgeGraphServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.SendTextMessageRequest.fromBuffer(value),
         ($0.SendTextMessageResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetGraphRequest, $0.GetGraphResponse>(
+        'GetGraph',
+        getGraph_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetGraphRequest.fromBuffer(value),
+        ($0.GetGraphResponse value) => value.writeToBuffer()));
   }
 
   $async.Stream<$0.TextMessage> messagesStream_Pre($grpc.ServiceCall call,
@@ -84,8 +103,15 @@ abstract class KnowledgeGraphServiceBase extends $grpc.Service {
     return sendTextMessage(call, await request);
   }
 
+  $async.Future<$0.GetGraphResponse> getGraph_Pre(
+      $grpc.ServiceCall call, $async.Future<$0.GetGraphRequest> request) async {
+    return getGraph(call, await request);
+  }
+
   $async.Stream<$0.TextMessage> messagesStream(
       $grpc.ServiceCall call, $0.MessagesStreamRequest request);
   $async.Future<$0.SendTextMessageResponse> sendTextMessage(
       $grpc.ServiceCall call, $0.SendTextMessageRequest request);
+  $async.Future<$0.GetGraphResponse> getGraph(
+      $grpc.ServiceCall call, $0.GetGraphRequest request);
 }

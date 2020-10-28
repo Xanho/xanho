@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package org.xanho.proto.graph;
+
+message Node {
+  int32 id = 1;
+  string nodeType = 2;
+  DataObject data = 3;
+}
+
+message Edge {
+  int32 id = 1;
+  string edgeType = 2;
+  int32 sourceId = 3;
+  int32 destinationId = 4;
+  DataObject data = 5;
+}
+
+message Graph {
+  repeated Node nodes = 1;
+  repeated Edge edges = 2;
+}
+
+message DataObject {
+  map<string, Data> values = 1;
+}
+
+message DataList {
+  repeated Data values = 1;
+}
+
+enum NullData {
+  NULL_DATA = 0;
+}
+
+message Data {
+  oneof kind {
+    bool boolValue = 1;
+    int32 intValue = 2;
+    int64 longValue = 3;
+    float floatValue = 4;
+    double doubleValue = 5;
+    string stringValue = 6;
+    NullData nullValue = 7;
+    DataObject objectValue = 8;
+    DataList listValue = 9;
+  }
+}

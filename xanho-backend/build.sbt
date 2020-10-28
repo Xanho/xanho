@@ -45,10 +45,17 @@ lazy val protos =
       ),
     )
 
+lazy val dictionary =
+  project
+
+lazy val graph =
+  project
+    .dependsOn(protos)
+
 lazy val nlp =
   project
     .settings(commonSettings: _*)
-    .dependsOn(protos)
+    .dependsOn(protos, dictionary, graph)
     .settings(
       libraryDependencies ++= Seq(
         Dependencies.openNlp,

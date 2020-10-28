@@ -18,6 +18,7 @@ dependencies:
   firebase_core: "^0.5.0+1"
   firebase_auth: "^0.18.1+2"
   fixnum: ^0.10.11
+  graphview: ^0.6.1
 
 dev_dependencies:
   flutter_test:

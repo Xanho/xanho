@@ -5,6 +5,7 @@ import akka.stream.stage.{GraphStage, GraphStageLogic, OutHandler}
 import akka.stream.{Attributes, Outlet, SourceShape}
 import com.google.cloud.firestore.{ListenerRegistration, Query, QuerySnapshot}
 
+import scala.compat.java8.FutureConverters
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Promise}
 
@@ -51,11 +52,8 @@ class FirestoreQuerySnapshotStream(query: Query) extends GraphStage[SourceShape[
           case _ =>
             getAsyncCallback(handleSnapshot)
               .invoke(snapshot)
-            // TODO: Gross...
-            Await.result(
-              snapshotProcessed.future,
-              10.minutes
-            )
+            FutureConverters.toJava(snapshotProcessed.future)
+              .toCompletableFuture.get()
         }
       }
 

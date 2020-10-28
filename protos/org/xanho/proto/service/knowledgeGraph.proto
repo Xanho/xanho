@@ -2,11 +2,15 @@ syntax = "proto3";
 
 package org.xanho.proto.service.knowledgegraph;
 
+import "org/xanho/proto/graph/graph.proto";
+
 service KnowledgeGraphService {
 
   rpc MessagesStream(MessagesStreamRequest) returns (stream TextMessage);
 
   rpc SendTextMessage(SendTextMessageRequest) returns (SendTextMessageResponse);
+
+  rpc GetGraph(GetGraphRequest) returns (GetGraphResponse);
 
 }
 
@@ -34,4 +38,13 @@ message SendTextMessageRequest {
 message SendTextMessageResponse {
   string graphId = 1;
   bool success = 2;
+}
+
+message GetGraphRequest {
+  string graphId = 1;
+}
+
+message GetGraphResponse {
+  string graphId = 1;
+  org.xanho.proto.graph.Graph graph = 2;
 }
