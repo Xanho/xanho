@@ -11,6 +11,7 @@ package object graph {
   }
 
   object EdgeTypes {
+    val WordWord = "wordWord"
     val PhraseWord = "phraseWord"
     val SentencePunctuation = "sentencePunctuation"
     val SentencePhrase = "sentencePhrase"

@@ -1,46 +1,36 @@
+import 'package:flutter/material.dart';
 import 'package:frontend/src/proto/org/xanho/proto/graph/graph.pb.dart';
 
-Graph subGraphAround(Node node, Graph graph) {
-  var maxNodes = 30;
-  var idx = 0;
+extension GraphOps on Graph {
+  Node node(int id) => nodes.firstWhere((node) => node.id == id);
+  Edge edge(int id) => edges.firstWhere((edge) => edge.id == id);
 
-  final newGraph = Graph();
-  newGraph.nodes.add(node);
-
-  while (newGraph.nodes.length < maxNodes && idx < newGraph.nodes.length) {
-    var currentNode = newGraph.nodes[idx];
-    currentNode.sourceEdges(graph).forEach(
-      (edge) {
-        if (!newGraph.edges.contains(edge)) {
-          newGraph.edges.add(edge);
-        }
-        final destinationNode = graph.nodes[edge.destinationId];
-        if (!newGraph.nodes.contains(destinationNode)) {
-          newGraph.nodes.add(destinationNode);
-        }
-      },
-    );
-    currentNode.destinationEdges(graph).forEach(
-      (edge) {
-        if (!newGraph.edges.contains(edge)) {
-          newGraph.edges.add(edge);
-        }
-        final sourceNode = graph.nodes[edge.sourceId];
-        if (!newGraph.nodes.contains(sourceNode)) {
-          newGraph.nodes.add(sourceNode);
-        }
-      },
-    );
-    idx++;
+  void addNodeIfNotExists(Node node) {
+    if (!nodes.contains(node)) nodes.add(node);
   }
 
-  newGraph.nodes.sort((nodeA, nodeB) => nodeA.id.compareTo(nodeB.id));
-  newGraph.edges.sort((edgeA, edgeB) => edgeA.id.compareTo(edgeB.id));
+  void addEdgeIfNotExists(Edge edge) {
+    if (!edges.contains(edge)) edges.add(edge);
+  }
 
-  return newGraph;
+  Graph expandAround(Node node, Graph parentGraph) {
+    final newGraph = clone();
+
+    node.sourceEdges(parentGraph).forEach(
+      (edge) {
+        newGraph.addNodeIfNotExists(edge.destination(parentGraph));
+        newGraph.addEdgeIfNotExists(edge);
+      },
+    );
+    node.destinationEdges(parentGraph).forEach(
+      (edge) {
+        newGraph.addNodeIfNotExists(edge.source(parentGraph));
+        newGraph.addEdgeIfNotExists(edge);
+      },
+    );
+    return newGraph;
+  }
 }
-
-extension GraphOps on Graph {}
 
 extension NodeOps on Node {
   Iterable<Edge> sourceEdges(Graph graph) =>
@@ -55,4 +45,36 @@ extension EdgeOps on Edge {
       graph.nodes.firstWhere((node) => node.id == this.sourceId);
   Node destination(Graph graph) =>
       graph.nodes.firstWhere((node) => node.id == this.destinationId);
+}
+
+class GraphDeltas {
+  GraphDeltas(
+      {@required this.newNodes,
+      @required this.deletedNodes,
+      @required this.newEdges,
+      @required this.deletedEdges});
+  Set<Node> newNodes;
+  Set<Node> deletedNodes;
+  Set<Edge> newEdges;
+  Set<Edge> deletedEdges;
+
+  GraphDeltas.fromGraphs(Graph oldGraph, Graph newGraph)
+      : this(
+          newNodes: Set.of(
+            newGraph.nodes
+                .where((newNode) => !oldGraph.nodes.contains(newNode)),
+          ),
+          deletedNodes: Set.of(
+            oldGraph.nodes
+                .where((oldNode) => !newGraph.nodes.contains(oldNode)),
+          ),
+          newEdges: Set.of(
+            newGraph.edges
+                .where((newEdge) => !oldGraph.edges.contains(newEdge)),
+          ),
+          deletedEdges: Set.of(
+            oldGraph.edges
+                .where((oldEdge) => !newGraph.edges.contains(oldEdge)),
+          ),
+        );
 }
