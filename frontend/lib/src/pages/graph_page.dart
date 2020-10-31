@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -44,40 +45,66 @@ class GraphViewParent extends StatefulWidget {
 
 class _GraphViewParentState extends State<GraphViewParent> {
   graphPb.Graph _currentPartialGraph;
+  StreamController<graphPb.Graph> _streamController;
+  graphPb.Node _focusedNode;
 
   @override
   void initState() {
     super.initState();
-    var randomFocus =
-        widget.graph.nodes[Random().nextInt(widget.graph.nodes.length)];
-    this._currentPartialGraph = graphLogic.subGraphAround(
-      randomFocus,
-      widget.graph,
-    );
+
+    this._currentPartialGraph = _initialPartialGraph(widget.graph);
+
+    this._focusedNode = this
+        ._currentPartialGraph
+        .nodes
+        .firstWhere((node) => node.nodeType == "document");
+
+    _streamController = StreamController<graphPb.Graph>();
+
+    _streamController.add(this._currentPartialGraph);
+  }
+
+  static graphPb.Graph _initialPartialGraph(graphPb.Graph rootGraph) {
+    graphPb.Graph graph = graphPb.Graph();
+    rootGraph.nodes
+        .where((node) => node.nodeType == "document")
+        .forEach((node) {
+      graph.addNodeIfNotExists(node);
+      graph.expandAround(node, rootGraph);
+    });
+    return graph;
   }
 
   @override
   Widget build(BuildContext context) {
     return GraphViewPage(
       key: UniqueKey(),
-      graph: this._currentPartialGraph,
+      initialGraph: _currentPartialGraph,
+      graphChanges: this._streamController.stream,
+      focusedNode: _focusedNode,
       onNodeTapped: this._onNodeTapped,
     );
   }
 
   _onNodeTapped(graphPb.Node node) {
-    final newGraph = graphLogic.subGraphAround(node, widget.graph);
-    setState(() {
-      this._currentPartialGraph = newGraph;
-    });
+    final newGraph = _currentPartialGraph.expandAround(node, widget.graph);
+    _currentPartialGraph = newGraph;
+    _streamController.add(newGraph);
   }
 }
 
 class GraphViewPage extends StatefulWidget {
-  GraphViewPage({Key key, @required this.graph, @required this.onNodeTapped})
+  GraphViewPage(
+      {Key key,
+      @required this.initialGraph,
+      @required this.graphChanges,
+      @required this.focusedNode,
+      @required this.onNodeTapped})
       : super(key: key);
 
-  final graphPb.Graph graph;
+  final graphPb.Graph initialGraph;
+  final Stream<graphPb.Graph> graphChanges;
+  final graphPb.Node focusedNode;
   final Function(graphPb.Node) onNodeTapped;
 
   @override
@@ -89,26 +116,71 @@ class _GraphViewPageState extends State<GraphViewPage> {
 
   final Layout fruchterman = FruchtermanReingoldAlgorithm(iterations: 100);
 
-  List<Node> _nodes = List<Node>();
+  graphPb.Graph previousGraph = graphPb.Graph();
+
+  Map<graphPb.Node, Node> _nodeMapping = Map();
+  Map<graphPb.Edge, Edge> _edgeMapping = Map();
+
+  StreamSubscription<graphPb.Graph> _subscription;
 
   @override
   void initState() {
     super.initState();
-    _nodes = widget.graph.nodes
-        .map((node) => Node(
-              NodeWidget(
-                node: node,
-                onTap: () => widget.onNodeTapped(node),
-              ),
-            ))
-        .toList();
-    graphView.addNodes(_nodes);
-    widget.graph.edges.forEach((edge) => graphView.addEdge(
-          _nodes.elementAt(widget.graph.nodes
-              .indexWhere((node) => node.id == edge.sourceId)),
-          _nodes.elementAt(widget.graph.nodes
-              .indexWhere((node) => node.id == edge.destinationId)),
-        ));
+    _updateGraph(widget.initialGraph);
+    this._subscription = widget.graphChanges.listen(_updateGraph);
+    previousGraph.addNodeIfNotExists(widget.focusedNode);
+    Node nodeView = _nodeView(widget.focusedNode);
+    _nodeMapping[widget.focusedNode] = nodeView;
+    graphView.addNode(nodeView);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _subscription.cancel();
+  }
+
+  void _updateGraph(graphPb.Graph newGraph) {
+    final deltas = graphLogic.GraphDeltas.fromGraphs(previousGraph, newGraph);
+    graphView.removeEdges(
+        deltas.deletedEdges.map((edge) => _edgeMapping[edge]).toList());
+    graphView.removeNodes(
+        deltas.deletedNodes.map((node) => _nodeMapping[node]).toList());
+    deltas.newNodes.forEach((node) {
+      Node nodeView = _nodeView(node);
+      _nodeMapping[node] = nodeView;
+      graphView.addNode(nodeView);
+    });
+    deltas.newEdges.forEach((edge) {
+      final sourceNodeView = _nodeMapping[edge.source(newGraph)];
+      final destinationNodeView = _nodeMapping[edge.destination(newGraph)];
+      final edgeView = Edge(
+        sourceNodeView,
+        destinationNodeView,
+        paint: Paint()
+          ..color = edge.color
+          ..strokeWidth = 2
+          ..style = PaintingStyle.fill,
+      );
+      _edgeMapping[edge] = edgeView;
+      graphView.addEdgeS(edgeView);
+    });
+    previousGraph = newGraph;
+    setState(() {});
+  }
+
+  Node _nodeView(graphPb.Node node) {
+    Node nodeView;
+    nodeView = Node(
+      NodeWidget(
+        node: node,
+        onTap: () {
+          fruchterman.setFocusedNode(nodeView);
+          widget.onNodeTapped(node);
+        },
+      ),
+    );
+    return nodeView;
   }
 
   @override
@@ -122,12 +194,13 @@ class _GraphViewPageState extends State<GraphViewPage> {
         ..style = PaintingStyle.fill,
     );
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: SingleChildScrollView(
-        child: graphView2,
-      ),
+    final interactive = InteractiveViewer(
+      child: graphView2,
+      constrained: false,
+      maxScale: 4,
+      minScale: 0.1,
     );
+    return interactive;
   }
 }
 
@@ -144,7 +217,6 @@ class NodeWidget extends StatelessWidget {
       child: Text(_text),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(4),
-        // boxShadow: [BoxShadow(color: Colors.blue[100], spreadRadius: 1)],
         color: _boxColor,
       ),
     );
@@ -165,16 +237,16 @@ class NodeWidget extends StatelessWidget {
         return node.data.values["value"].stringValue;
         break;
       case "sentence":
-        return "S";
+        return "Sentence";
         break;
       case "paragraph":
-        return "P";
+        return "Paragraph";
         break;
       case "document":
-        return "D";
+        return "Document";
         break;
       case "phrase":
-        return "P";
+        return "Phrase";
         break;
     }
 
@@ -187,7 +259,7 @@ class NodeWidget extends StatelessWidget {
         return Colors.green;
         break;
       case "punctuation":
-        return Colors.yellow[800];
+        return Colors.green[800];
         break;
       case "sentence":
         return Colors.purple;
@@ -202,5 +274,25 @@ class NodeWidget extends StatelessWidget {
         return Colors.deepOrange;
         break;
     }
+  }
+}
+
+extension EdgeUiOps on graphPb.Edge {
+  Color get color {
+    switch (edgeType) {
+      case "wordWord":
+        return Colors.green[200];
+      case "phraseWord":
+        return Colors.green[200];
+      case "sentencePunctuation":
+        return Colors.lime[200];
+      case "sentencePhrase":
+        return Colors.orange[200];
+      case "paragraphSentence":
+        return Colors.purple[200];
+      case "documentParagraph":
+        return Colors.blue[200];
+    }
+    return Colors.white;
   }
 }

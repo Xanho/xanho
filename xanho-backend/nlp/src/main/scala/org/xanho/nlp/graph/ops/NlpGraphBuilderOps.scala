@@ -42,15 +42,19 @@ class NlpGraphBuilder[T](val graph: Graph) extends AnyVal {
     val (graphWithPhrase, phraseNode) =
       graph.withNode(NodeTypes.Phrase, DataObject.defaultInstance)
 
-    val graphWithWords =
+    val (graphWithWords, _) =
       phrase.words.zipWithIndex
-        .foldLeft(graphWithPhrase) {
-          case (g, (word, index)) =>
+        .foldLeft((graphWithPhrase, None: Option[Node])) {
+          case ((g, previousWord), (word, index)) =>
             val (g1, wordNode) =
               g.withWordIfNotExists(word)
             val (g2, _) =
               g1.withEdge(EdgeTypes.PhraseWord, phraseNode, wordNode, DataObject(Map("index" -> Data().withIntValue(index))))
-            g2
+            val g3 =
+              previousWord.fold(g2)(previousWord =>
+                g2.withEdge(EdgeTypes.WordWord, previousWord, wordNode, DataObject())._1
+              )
+            (g3, Some(wordNode))
         }
 
     (graphWithWords, phraseNode)
