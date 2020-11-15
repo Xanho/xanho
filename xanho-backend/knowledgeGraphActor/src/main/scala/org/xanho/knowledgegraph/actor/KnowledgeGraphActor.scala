@@ -55,7 +55,7 @@ object KnowledgeGraphActor {
           Some(message.source)
             .filter(_ == MessageSource.USER)
             .flatMap(_ =>
-              message.text.parse.document
+              message.text.sanitize.parse.document
                 .map(document =>
                   state.graph.getOrElse(graph.Graph.defaultInstance)
                     .withDocument(document)._1

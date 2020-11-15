@@ -8,7 +8,7 @@ class LoadingPage extends StatelessWidget {
     final column = Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
-      children: [progressCircle],
+      children: [Center(child: progressCircle)],
     );
 
     return Scaffold(

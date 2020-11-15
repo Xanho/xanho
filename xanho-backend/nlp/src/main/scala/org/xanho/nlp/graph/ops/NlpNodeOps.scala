@@ -23,11 +23,27 @@ class NlpNode(val node: Node) extends AnyVal {
   def punctuationValue: Char =
     node.dataOrEmpty.values("value").getStringValue.head
 
+  def nextWordWords(implicit graph: Graph): Stream[(WordNode, Double)] =
+    node.sourceEdges
+      .filter(_.edgeType == EdgeTypes.WordWord)
+      .map(edge => (edge.destination, edge.dataOrEmpty.values.get("association").fold(0d)(_.getDoubleValue)))
+
+  def previousWordWords(implicit graph: Graph): Stream[(WordNode, Double)] =
+    node.destinationEdges
+      .filter(_.edgeType == EdgeTypes.WordWord)
+      .map(edge => (edge.source, edge.dataOrEmpty.values.get("association").fold(0d)(_.getDoubleValue)))
+
   def phraseWords(implicit graph: Graph): Stream[WordNode] =
     node.sourceEdges
       .filter(_.edgeType == EdgeTypes.PhraseWord)
       .sortBy(_.dataOrEmpty.values("index").getIntValue)
       .map(_.destination)
+
+  def phrasePosTags(implicit graph: Graph): Stream[String] =
+    node.sourceEdges
+      .filter(_.edgeType == EdgeTypes.PhraseWord)
+      .sortBy(_.dataOrEmpty.values("index").getIntValue)
+      .map(_.dataOrEmpty.values("posTag").getStringValue)
 
   def wordPhrases(implicit graph: Graph): Stream[PhraseNode] =
     node.destinationEdges

@@ -3,9 +3,11 @@ package org.xanho.nlp.graph.ops
 import org.xanho.graph.ops.implicits._
 import org.xanho.nlp.graph._
 import org.xanho.nlp.graph.ops.implicits._
+import org.xanho.nlp.opennlp.OpenNlpApi
 import org.xanho.proto.graph._
 import org.xanho.proto.nlp
 
+import scala.annotation.tailrec
 import scala.language.implicitConversions
 
 trait NlpGraphBuilderOps {
@@ -37,24 +39,58 @@ class NlpGraphBuilder[T](val graph: Graph) extends AnyVal {
     graph.withNode(NodeTypes.Punctuation, DataObject(data))
   }
 
+  def withWordWord(wordANode: WordNode, wordBNode: WordNode, distance: Double): (Graph, Edge) = {
+    val association =
+      1d / distance
+
+    val existingEdgeOpt =
+      graph.edges.find(edge => edge.sourceId == wordANode.id && edge.destinationId == wordBNode.id)
+
+    val updatedAssociation =
+      existingEdgeOpt
+        .flatMap(_.data)
+        .flatMap(_.values.get("association"))
+        .map(_.getDoubleValue)
+        .foldLeft(association)(_ + _)
+
+    val updatedData =
+      DataObject(
+        existingEdgeOpt
+          .flatMap(_.data.map(_.values))
+          .getOrElse(Map.empty)
+          .updated("association", Data().withDoubleValue(updatedAssociation))
+      )
+
+    existingEdgeOpt match {
+      case Some(existingEdge) => graph.withEdge(existingEdge.copy(data = Some(updatedData)))
+      case _ => graph.withEdge(EdgeTypes.WordWord, wordANode, wordBNode, updatedData)
+    }
+  }
+
   def withPhrase(phrase: nlp.Phrase): (Graph, PhraseNode) = {
+
+    val tagged =
+      OpenNlpApi().posTag(phrase.words.map(_.value).toList)
 
     val (graphWithPhrase, phraseNode) =
       graph.withNode(NodeTypes.Phrase, DataObject.defaultInstance)
 
-    val (graphWithWords, _) =
-      phrase.words.zipWithIndex
-        .foldLeft((graphWithPhrase, None: Option[Node])) {
-          case ((g, previousWord), (word, index)) =>
+    val graphWithWords =
+      tagged.zipWithIndex
+        .foldLeft(graphWithPhrase) {
+          case (g, ((word, posTag), index)) =>
+            val wordToken =
+              nlp.Token.Word(word)
             val (g1, wordNode) =
-              g.withWordIfNotExists(word)
-            val (g2, _) =
-              g1.withEdge(EdgeTypes.PhraseWord, phraseNode, wordNode, DataObject(Map("index" -> Data().withIntValue(index))))
-            val g3 =
-              previousWord.fold(g2)(previousWord =>
-                g2.withEdge(EdgeTypes.WordWord, previousWord, wordNode, DataObject())._1
+              g.withWordIfNotExists(wordToken)
+            val data =
+              Map(
+                "index" -> Data().withIntValue(index),
+                "posTag" -> Data().withStringValue(posTag)
               )
-            (g3, Some(wordNode))
+            val (g2, _) =
+              g1.withEdge(EdgeTypes.PhraseWord, phraseNode, wordNode, DataObject(data))
+            g2
         }
 
     (graphWithWords, phraseNode)
@@ -118,7 +154,38 @@ class NlpGraphBuilder[T](val graph: Graph) extends AnyVal {
               g1.withEdge(EdgeTypes.DocumentParagraph, documentNode, paragraphNode, DataObject(Map("index" -> Data().withIntValue(index))))
             g2
         }
-    (withEdges, documentNode)
+
+    val wordNodes = {
+      implicit val g: Graph = withEdges
+      documentNode.documentParagraphs
+        .flatMap(_.paragraphSentences)
+        .map(_.sentencePhrase)
+        .flatMap(_.phraseWords)
+        .toList
+    }
+
+    @tailrec
+    def unfoldWordNodes(graph: Graph, wordNodes: List[WordNode]): Graph =
+      wordNodes match {
+        case Nil =>
+          graph
+        case head :: tail =>
+          unfoldWordNodes(
+            tail
+              .take(8)
+              .zipWithIndex
+              .foldLeft(graph) {
+                case (g, (destinationWord, distance)) =>
+                  g.withWordWord(head, destinationWord, distance + 1)._1
+              },
+            tail
+          )
+      }
+
+    val withWordWords =
+      unfoldWordNodes(withEdges, wordNodes)
+
+    (withWordWords, documentNode)
   }
 
 }

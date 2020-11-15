@@ -5,6 +5,12 @@ extension GraphOps on Graph {
   Node node(int id) => nodes.firstWhere((node) => node.id == id);
   Edge edge(int id) => edges.firstWhere((edge) => edge.id == id);
 
+  Iterable<Node> nodesOfType(String nodeType) =>
+      nodes.where((node) => node.nodeType == nodeType);
+
+  Iterable<Edge> edgesOfType(String edgeType) =>
+      edges.where((edge) => edge.edgeType == edgeType);
+
   void addNodeIfNotExists(Node node) {
     if (!nodes.contains(node)) nodes.add(node);
   }

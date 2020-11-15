@@ -59,6 +59,11 @@ lazy val nlp =
       )
     )
 
+lazy val nlg =
+  project
+    .settings(commonSettings: _*)
+    .dependsOn(nlp)
+
 lazy val akkaGrpcCompat =
   project
     .enablePlugins(AkkaGrpcPlugin)

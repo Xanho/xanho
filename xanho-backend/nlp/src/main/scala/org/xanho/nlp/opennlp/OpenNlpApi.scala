@@ -22,13 +22,20 @@ class OpenNlpApi {
     val words =
       WhitespaceTokenizer.INSTANCE
         .tokenize(sentence)
-    val tags =
-      posTagger.tag(words)
 
-    words.toList.zip(tags)
+    posTag(words.toList)
   }
+
+  def posTag(words: List[String]): List[(String, String)] =
+    words.zip(posTagger.tag(words.toArray))
 
   def sentences(text: String): List[String] =
     sentenceDetector.sentDetect(text).toList
 
+}
+
+object OpenNlpApi {
+  private lazy val instance = new OpenNlpApi()
+
+  def apply(): OpenNlpApi = instance
 }

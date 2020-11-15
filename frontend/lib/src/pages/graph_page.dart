@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:frontend/src/logic/graph_service.dart';
@@ -8,7 +7,9 @@ import 'package:frontend/src/proto/org/xanho/proto/graph/graph.pb.dart'
     as graphPb;
 import 'package:graphview/GraphView.dart';
 import 'package:provider/provider.dart';
-import 'package:frontend/src/logic/graph_logic.dart' as graphLogic;
+import 'package:frontend/src/logic/graph_logic.dart';
+import 'package:frontend/src/logic/nlp_graph_logic.dart';
+import 'dart:math';
 
 class GraphPage extends StatefulWidget {
   const GraphPage(this.graphId);
@@ -31,7 +32,7 @@ class _GraphPageState extends State<GraphPage> {
 
   _graphPage(BuildContext context, graphPb.Graph graph) => Scaffold(
         appBar: AppBar(title: Text("Graph View")),
-        body: GraphViewParent(graph: graph),
+        body: GraphViewParent(graph: graph.wordGraph),
       );
 }
 
@@ -52,12 +53,12 @@ class _GraphViewParentState extends State<GraphViewParent> {
   void initState() {
     super.initState();
 
-    this._currentPartialGraph = _initialPartialGraph(widget.graph);
+    this._currentPartialGraph = widget.graph;
 
     this._focusedNode = this
         ._currentPartialGraph
         .nodes
-        .firstWhere((node) => node.nodeType == "document");
+        .firstWhere((node) => node.nodeType == "word");
 
     _streamController = StreamController<graphPb.Graph>();
 
@@ -141,7 +142,8 @@ class _GraphViewPageState extends State<GraphViewPage> {
   }
 
   void _updateGraph(graphPb.Graph newGraph) {
-    final deltas = graphLogic.GraphDeltas.fromGraphs(previousGraph, newGraph);
+    final deltas = GraphDeltas.fromGraphs(previousGraph, newGraph);
+    previousGraph = newGraph;
     graphView.removeEdges(
         deltas.deletedEdges.map((edge) => _edgeMapping[edge]).toList());
     graphView.removeNodes(
@@ -158,14 +160,13 @@ class _GraphViewPageState extends State<GraphViewPage> {
         sourceNodeView,
         destinationNodeView,
         paint: Paint()
-          ..color = edge.color
+          ..color = edge.color(newGraph)
           ..strokeWidth = 2
           ..style = PaintingStyle.fill,
       );
       _edgeMapping[edge] = edgeView;
       graphView.addEdgeS(edgeView);
     });
-    previousGraph = newGraph;
     setState(() {});
   }
 
@@ -174,6 +175,7 @@ class _GraphViewPageState extends State<GraphViewPage> {
     nodeView = Node(
       NodeWidget(
         node: node,
+        graph: previousGraph,
         onTap: () {
           fruchterman.setFocusedNode(nodeView);
           widget.onNodeTapped(node);
@@ -205,19 +207,20 @@ class _GraphViewPageState extends State<GraphViewPage> {
 }
 
 class NodeWidget extends StatelessWidget {
-  NodeWidget({@required this.node, @required this.onTap});
+  NodeWidget({@required this.node, @required this.graph, @required this.onTap});
 
   final graphPb.Node node;
+  final graphPb.Graph graph;
   final Function() onTap;
 
   @override
   Widget build(BuildContext context) {
     var container = Container(
       padding: EdgeInsets.all(12),
-      child: Text(_text),
+      child: Text(node.text),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(4),
-        color: _boxColor,
+        color: node.boxColor(graph),
       ),
     );
 
@@ -227,14 +230,16 @@ class NodeWidget extends StatelessWidget {
     );
     return gestureDetector;
   }
+}
 
-  get _text {
-    switch (node.nodeType) {
+extension NodeUiOps on graphPb.Node {
+  String get text {
+    switch (nodeType) {
       case "word":
-        return node.data.values["value"].stringValue;
+        return data.values["value"].stringValue;
         break;
       case "punctuation":
-        return node.data.values["value"].stringValue;
+        return data.values["value"].stringValue;
         break;
       case "sentence":
         return "Sentence";
@@ -250,13 +255,19 @@ class NodeWidget extends StatelessWidget {
         break;
     }
 
-    return node.nodeType;
+    return nodeType;
   }
 
-  get _boxColor {
-    switch (node.nodeType) {
+  double _wordAlpha(graphPb.Graph graph) => min(relavence(graph), 1);
+
+  Color boxColor(graphPb.Graph graph) {
+    switch (nodeType) {
       case "word":
-        return Colors.green;
+        final alpha = _wordAlpha(graph);
+        return Colors.black
+            .withBlue(50)
+            .withRed(50)
+            .withGreen((50 + alpha * 205).round());
         break;
       case "punctuation":
         return Colors.green[800];
@@ -274,14 +285,29 @@ class NodeWidget extends StatelessWidget {
         return Colors.deepOrange;
         break;
     }
+
+    return Colors.blue;
   }
 }
 
 extension EdgeUiOps on graphPb.Edge {
-  Color get color {
+  Color color(graphPb.Graph graph) {
     switch (edgeType) {
       case "wordWord":
-        return Colors.green[200];
+        final association = data.values["association"]?.doubleValue;
+        final double alpha = (association != null)
+            ? max(
+                min(
+                    (1.toDouble() -
+                        1.toDouble() /
+                            (association * log(graph.edges.length.toDouble()))),
+                    1),
+                0)
+            : 0;
+        return Colors.black
+            .withBlue(50)
+            .withRed(50)
+            .withGreen((50 + alpha * 205).round());
       case "phraseWord":
         return Colors.green[200];
       case "sentencePunctuation":

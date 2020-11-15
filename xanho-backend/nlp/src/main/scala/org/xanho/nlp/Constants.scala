@@ -25,7 +25,7 @@ object Constants {
     Set('\'', '-') ++
       ('a' to 'z') ++
       ('A' to 'Z') ++
-      ('0' to '1')
+      ('0' to '9')
 
   final val ValidCharacters: Set[Char] =
     Set(LineBreak, Space) ++

@@ -64,4 +64,10 @@ class NlpGraphQuery(val graph: Graph) extends AnyVal {
           )
       )
 
+  def wordsByPosTag(posTag: String): Stream[WordNode] =
+    graph
+      .edgesByType(EdgeTypes.PhraseWord)
+      .filter(_.dataOrEmpty.values.get("posTag").exists(_.getStringValue == posTag))
+      .map(_.destination(graph))
+
 }
