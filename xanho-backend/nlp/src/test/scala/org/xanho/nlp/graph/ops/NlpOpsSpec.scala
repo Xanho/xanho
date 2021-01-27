@@ -37,7 +37,7 @@ class NlpOpsSpec extends AnyFlatSpec with Matchers {
     sentence1.sentencePhrase
       .phraseWords
       .map(_.wordValue)
-      .mkString(" ") shouldBe "scala is a general-purpose programming language providing support for both object-oriented programming and functional programming"
+      .mkString(" ") shouldBe "Scala is a general-purpose programming language providing support for both object-oriented programming and functional programming"
 
   }
 
